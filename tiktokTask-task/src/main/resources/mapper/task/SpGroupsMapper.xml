@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tiktok.task.mapper.SpGroupsMapper">
+    
+    <resultMap type="SpGroups" id="SpGroupsResult">
+        <result property="id"    column="id"    />
+        <result property="groupName"    column="group_name"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="status"    column="status"    />
+    </resultMap>
+
+    <sql id="selectSpGroupsVo">
+        select id, group_name, create_time, status from sp_groups
+    </sql>
+
+    <select id="selectSpGroupsList" parameterType="SpGroups" resultMap="SpGroupsResult">
+        <include refid="selectSpGroupsVo"/>
+        <where>  
+            <if test="groupName != null  and groupName != ''"> and group_name like concat('%', #{groupName}, '%')</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+        </where>
+    </select>
+    
+    <select id="selectSpGroupsById" parameterType="Long" resultMap="SpGroupsResult">
+        <include refid="selectSpGroupsVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertSpGroups" parameterType="SpGroups">
+        insert into sp_groups
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="groupName != null">group_name,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="status != null">status,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="groupName != null">#{groupName},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="status != null">#{status},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSpGroups" parameterType="SpGroups">
+        update sp_groups
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="groupName != null">group_name = #{groupName},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="status != null">status = #{status},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSpGroupsById" parameterType="Long">
+        delete from sp_groups where id = #{id}
+    </delete>
+
+    <delete id="deleteSpGroupsByIds" parameterType="String">
+        delete from sp_groups where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

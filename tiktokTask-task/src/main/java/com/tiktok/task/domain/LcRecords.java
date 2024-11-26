@@ -45,13 +45,16 @@ public class LcRecords extends BaseEntity
     private String status;
 
     /** 时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "MM/dd/yyyy")
     @Excel(name = "时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date timestamp;
 
     /** 订单号 */
     @Excel(name = "订单号")
     private String orderNumber;
+
+    private String productTitle;
+    private String productType;
     public void setId(Long id) 
     {
         this.id = id;
@@ -145,5 +148,21 @@ public class LcRecords extends BaseEntity
 
     public void setOrderNumber(String orderNumber) {
         this.orderNumber = orderNumber;
+    }
+
+    public String getProductTitle() {
+        return productTitle;
+    }
+
+    public void setProductTitle(String productTitle) {
+        this.productTitle = productTitle;
+    }
+
+    public String getProductType() {
+        return productType;
+    }
+
+    public void setProductType(String productType) {
+        this.productType = productType;
     }
 }

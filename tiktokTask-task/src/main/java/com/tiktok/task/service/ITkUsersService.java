@@ -75,4 +75,10 @@ public interface ITkUsersService
     AjaxResult GetFundComposition();
 
     AjaxResult addSpecialTask(TaskData taskData);
+
+    int SignIn(TkUsers tkUsers);
+
+    int LanguageSetting(String language);
+
+    AjaxResult getLanguage();
 }

@@ -207,10 +207,12 @@
             #{id}
         </foreach>
     </update>
-    <update id="batchUpdateTasks"  parameterType="java.util.Map">
+    <update id="batchUpdateTasks" parameterType="java.util.Map">
         UPDATE tk_tasks
-        SET reward_amount = #{rewardAmount},
-        title = #{title}
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="rewardAmount != null">reward_amount = #{rewardAmount},</if>
+            <if test="title != null">title = #{title},</if>
+        </trim>
         WHERE id IN
         <foreach collection="idList" item="id" open="(" separator="," close=")">
             #{id}

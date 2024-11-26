@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.tiktok.common.core.domain.AjaxResult;
+import com.tiktok.common.core.redis.RedisCache;
 import com.tiktok.common.utils.SecurityUtils;
 import com.tiktok.task.domain.*;
 import com.tiktok.task.domain.ov.UserTaskOV;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import static com.tiktok.common.utils.PageUtils.startPage;
+import static com.tiktok.task.util.parseTitle.iterateObjectFields;
 
 /**
  * 任务列Service业务层处理
@@ -43,7 +45,8 @@ public class TkTasksServiceImpl implements ITkTasksService
     @Autowired
     private ITkTaskAcceptancesService tkTaskAcceptancesService;
 
-
+    @Autowired
+    private RedisCache redisCache;
 
     /**
      * 查询任务列
@@ -66,7 +69,16 @@ public class TkTasksServiceImpl implements ITkTasksService
     @Override
     public List<TkTasks> selectTkTasksList(TkTasks tkTasks)
     {
-        return tkTasksMapper.selectTkTasksList(tkTasks);
+        Long uid = SecurityUtils.getLoginUser().getUser().getUid();
+        List<TkTasks> tkTasksList = tkTasksMapper.selectTkTasksList(tkTasks);
+        if (uid != null) {
+            // 从Redis中获取用户的语言设置
+            String language =(String) redisCache.getCacheObject("user:language:" + uid);
+        }
+        for (int i = 0; i < tkTasksList.size(); i++) {
+            tkTasksList.set(i,(TkTasks) iterateObjectFields(tkTasksList.get(i),"English"));
+        }
+        return tkTasksList;
     }
 
     /**
@@ -124,6 +136,7 @@ public class TkTasksServiceImpl implements ITkTasksService
      */
     @Override
     public List<TkTasks> getTask(TkTasks tkTasks) {
+        Long uid = SecurityUtils.getLoginUser().getUser().getUid();
         long startTime = System.currentTimeMillis(); // 记录开始时间
         //用户领取过的过滤掉
         TkTaskAcceptances tkTaskAcceptances = new TkTaskAcceptances();
@@ -143,7 +156,15 @@ public class TkTasksServiceImpl implements ITkTasksService
         List<TkTasks> finalFilteredTasks = filteredTasks.stream()
                 .filter(task -> task.getSurplusquantity() > 0) // 假设 getSurplusquantity() 是获取剩余数量的方法
                 .collect(Collectors.toList());
+        String language = "Chinese";
+        if (uid != null) {
+            // 从Redis中获取用户的语言设置
+            language = (String) redisCache.getCacheObject("user:language:" + uid);
+        }
 
+        for (int i = 0; i < finalFilteredTasks.size(); i++) {
+            finalFilteredTasks.set(i,(TkTasks) iterateObjectFields(finalFilteredTasks.get(i),language));
+        }
 
         return finalFilteredTasks;
 
@@ -386,7 +407,8 @@ public class TkTasksServiceImpl implements ITkTasksService
 
     @Override
     public int batchUpdateTasks(List<Long> idList, String rewardAmount, String title) {
-        return tkTasksMapper.batchUpdateTasks(idList, rewardAmount, title);
+        tkTasksMapper.batchUpdateTasks(idList, rewardAmount, title);
+        return 1;
 
     }
 

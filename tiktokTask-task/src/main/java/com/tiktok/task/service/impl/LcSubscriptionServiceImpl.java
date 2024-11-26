@@ -1,6 +1,7 @@
 package com.tiktok.task.service.impl;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 import com.tiktok.common.core.domain.AjaxResult;
@@ -201,13 +202,31 @@ public class LcSubscriptionServiceImpl implements ILcSubscriptionService
         Long uid = SecurityUtils.getLoginUser().getUser().getUid();
         List<SubscriptionProductOV> subscriptionProductOVS = lcSubscriptionMapper.selectSubscriptionProductByUserIdAndStatus(uid, status,null);
         for (int i = 0; i < subscriptionProductOVS.size(); i++) {
-            Long totalShares = subscriptionProductOVS.get(i).getLcProduct().getTotalShares();//总数
-            Long soldShares = subscriptionProductOVS.get(i).getLcProduct().getSoldShares();//已出售份额
-            BigDecimal totalAmount = subscriptionProductOVS.get(i).getLcProduct().getTotalAmount();//单价
+            LcProduct lcProduct = subscriptionProductOVS.get(i).getLcProduct();
+            LcSubscription lcSubscription = subscriptionProductOVS.get(i).getLcSubscription();
+            Long totalShares = lcProduct.getTotalShares();//总数
+            Long soldShares = lcProduct.getSoldShares();//已出售份额
+            BigDecimal totalAmount = lcProduct.getTotalAmount();//单价
             double v = PercentageCalculator.calculatePercentage(totalShares.intValue(), soldShares.intValue());
-            subscriptionProductOVS.get(i).getLcProduct().setCompleted(v + "%");
-            subscriptionProductOVS.get(i).getLcProduct().setGrossAmount((new BigDecimal(totalShares).multiply(totalAmount)).toString());
+            lcProduct.setCompleted(v + "%");
+            lcProduct.setGrossAmount((new BigDecimal(totalShares).multiply(totalAmount)).toString());
+
+
+            BigDecimal  cycle = new BigDecimal(lcProduct.getCycle());//周期
+            BigDecimal dividendDays = new BigDecimal(lcProduct.getDividendDays());//天数
+            BigDecimal returnRate = new BigDecimal(lcProduct.getReturnRate());//收益
+            //计算产品大概可以产生多少收益
+            // 计算 cycle / dividendDays 并取整
+            BigDecimal divisionResult = cycle.divide(dividendDays, 0, RoundingMode.DOWN);
+
+            // 结果乘以 returnRate 并保留两位小数
+            BigDecimal finalResult = divisionResult.multiply(returnRate).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal count = new BigDecimal(lcSubscription.getSubscriptionCount());
+            BigDecimal multiply = count.multiply(finalResult);
+            subscriptionProductOVS.get(i).getLcProduct().setEstimatedIncome(multiply.toString());
+
         }
+        Collections.reverse(subscriptionProductOVS);
         return AjaxResult.success(subscriptionProductOVS);
     }
 
@@ -232,7 +251,28 @@ public class LcSubscriptionServiceImpl implements ILcSubscriptionService
         Collections.reverse(lcRecords); // 对lcRecords列表进行倒序排序
         HashMap<String, Object> objectObjectHashMap = new HashMap<>();
         if(subscriptionProductOVS.size()!=0){
-            objectObjectHashMap.put("product",subscriptionProductOVS.get(0));
+            SubscriptionProductOV subscriptionProductOV = subscriptionProductOVS.get(0);
+            LcProduct lcProduct = subscriptionProductOV.getLcProduct();
+            LcSubscription lcSubscription = subscriptionProductOV.getLcSubscription();
+
+            BigDecimal  cycle = new BigDecimal(lcProduct.getCycle());//周期
+            BigDecimal dividendDays = new BigDecimal(lcProduct.getDividendDays());//天数
+            BigDecimal returnRate = new BigDecimal(lcProduct.getReturnRate());//收益
+            
+
+            //计算产品大概可以产生多少收益
+            // 计算 cycle / dividendDays 并取整
+            BigDecimal divisionResult = cycle.divide(dividendDays, 0, RoundingMode.DOWN);
+
+            // 结果乘以 returnRate 并保留两位小数
+            BigDecimal finalResult = divisionResult.multiply(returnRate).setScale(2, RoundingMode.HALF_UP);
+
+            BigDecimal count = new BigDecimal(lcSubscription.getSubscriptionCount());
+            BigDecimal multiply = count.multiply(finalResult);
+            subscriptionProductOV.getLcProduct().setEstimatedIncome(multiply.toString());
+
+
+            objectObjectHashMap.put("product",subscriptionProductOV);
         }
         objectObjectHashMap.put("lcRecords",lcRecords);
         return AjaxResult.success(objectObjectHashMap);
@@ -263,6 +303,20 @@ public class LcSubscriptionServiceImpl implements ILcSubscriptionService
         HashMap<String, Object> objectObjectHashMap = new HashMap<>();
         objectObjectHashMap.put("myProject",lcSubscriptions.size());
         objectObjectHashMap.put("projectIncome",totalAmount);
+
+
+        //获取出用户一共质押了多少钱
+        //获取出来未结束的订单
+        lcSubscription.setStatus("0");
+        List<LcSubscription> lcSubscriptions2 = lcSubscriptionMapper.selectLcSubscriptionList(lcSubscription);
+        BigDecimal bigDecimal = new BigDecimal(0);
+        for (int i = 0; i < lcSubscriptions2.size(); i++) {
+            BigDecimal purchasePrice = new BigDecimal(lcSubscriptions2.get(i).getPurchasePrice());//单价
+            BigDecimal subscriptionCount = new BigDecimal(lcSubscriptions2.get(i).getSubscriptionCount());//数量
+            bigDecimal = bigDecimal.add(purchasePrice.multiply(subscriptionCount));
+
+        }
+        objectObjectHashMap.put("frozenAmount",bigDecimal);
         return AjaxResult.success(objectObjectHashMap);
     }
 }

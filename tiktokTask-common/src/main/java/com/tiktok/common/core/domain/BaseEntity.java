@@ -37,6 +37,8 @@ public class BaseEntity implements Serializable
 
     /** 备注 */
     private String remark;
+    /** 语言 */
+    private String Language;
 
     /** 请求参数 */
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -114,5 +116,13 @@ public class BaseEntity implements Serializable
     public void setParams(Map<String, Object> params)
     {
         this.params = params;
+    }
+
+    public String getLanguage() {
+        return Language;
+    }
+
+    public void setLanguage(String language) {
+        Language = language;
     }
 }

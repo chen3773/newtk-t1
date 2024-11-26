@@ -213,6 +213,28 @@ public class SysRoleServiceImpl implements ISysRoleService
     }
 
     /**
+     * 校验角色是否有数据权限
+     *
+     * @param roleIds 角色id
+     */
+    public void checkRoleDataScope2(Long... roleIds)
+    {
+        if (true)
+        {
+            for (Long roleId : roleIds)
+            {
+                SysRole role = new SysRole();
+                role.setRoleId(roleId);
+                List<SysRole> roles = SpringUtils.getAopProxy(this).selectRoleList(role);
+                if (StringUtils.isEmpty(roles))
+                {
+                    throw new ServiceException("没有权限访问角色数据！");
+                }
+            }
+        }
+    }
+
+    /**
      * 通过角色ID查询角色使用数量
      * 
      * @param roleId 角色ID

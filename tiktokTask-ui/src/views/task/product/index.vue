@@ -260,7 +260,7 @@
           <span>{{ parseTime(scope.row.endTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column> -->
-      
+
       <!-- <el-table-column label="" align="center" prop="deleted" /> -->
       <el-table-column label="周期(天)" align="center" prop="cycle" width="130">
         <template slot-scope="scope">
@@ -371,7 +371,7 @@
         <el-form-item label="分红周期(天)" prop="dividendDays">
           <el-input v-model="form.dividendDays" placeholder="请输入分红周期" />
         </el-form-item>
-        
+
         <el-form-item label="开始时间" prop="startTime">
           <el-date-picker clearable
                           v-model="form.startTime"
@@ -411,7 +411,7 @@
         <!-- <el-form-item label="" prop="deleted">
           <el-input v-model="form.deleted" placeholder="请输入" />
         </el-form-item> -->
-        
+
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -494,9 +494,9 @@ export default {
         mainImageUrl: [
           { required: true, message: "产品主图不能为空", trigger: "blur" }
         ],
-        detailImageUrl: [
-          { required: true, message: "详情图不能为空", trigger: "blur" }
-        ],
+        // detailImageUrl: [
+        //   { required: true, message: "详情图不能为空", trigger: "blur" }
+        // ],
         productDescription: [
           { required: true, message: "产品详情描述不能为空", trigger: "blur" }
         ],

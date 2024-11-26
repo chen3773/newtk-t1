@@ -30,8 +30,8 @@ public class AdminController extends BaseController {
      */
 
     @GetMapping("/AddAndDeduct")
-    public AjaxResult AddAndDeduct(String amount,String withdraw,String add,String uid,String rebate){
-        return  adminService.AddAndDeduct(amount,withdraw,add,uid,rebate);
+    public AjaxResult AddAndDeduct(String amount,String withdraw,String add,String uid,String rebate,String type){
+        return  adminService.AddAndDeduct(amount,withdraw,add,uid,rebate,type);
     }
 
     /**

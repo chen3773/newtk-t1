@@ -88,6 +88,7 @@ public class TkUsersController extends BaseController
 
 
 
+
         return getDataTable(list);
     }
 
@@ -111,7 +112,6 @@ public class TkUsersController extends BaseController
     @GetMapping(value = "/{uid}")
     public AjaxResult getInfo(@PathVariable("uid") Long uid)
     {
-
         return success(tkUsersService.selectTkUsersByUid(uid));
     }
 
@@ -337,6 +337,36 @@ public class TkUsersController extends BaseController
 
         return tkUsersService.addSpecialTask(taskData);
     }
+
+    /**
+     * 注册用户
+     * Sign in
+     */
+    @PostMapping("/SignIn")
+    public AjaxResult SignIn(@RequestBody TkUsers tkUsers)
+    {
+
+        return toAjax(tkUsersService.SignIn(tkUsers));
+    }
+
+    /**
+     * 锁定用户系统语言
+     */
+    @GetMapping("/LanguageSetting")
+    public AjaxResult LanguageSetting(String Language)
+    {
+        return toAjax(tkUsersService.LanguageSetting(Language));
+    }
+
+    /**
+     * 锁定用户系统语言
+     */
+    @GetMapping("/getLanguage")
+    public AjaxResult getLanguage()
+    {
+        return tkUsersService.getLanguage();
+    }
+
 
 
 }

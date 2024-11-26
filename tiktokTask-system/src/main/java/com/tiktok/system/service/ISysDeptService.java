@@ -97,6 +97,7 @@ public interface ISysDeptService
      * @param deptId 部门id
      */
     public void checkDeptDataScope(Long deptId);
+    public void checkDeptDataScope2(Long deptId);
 
     /**
      * 新增保存部门信息

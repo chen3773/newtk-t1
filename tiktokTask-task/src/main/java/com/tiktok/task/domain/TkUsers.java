@@ -1,6 +1,8 @@
 package com.tiktok.task.domain;
 
 import java.util.Date;
+import java.util.HashMap;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -94,6 +96,7 @@ public class TkUsers extends BaseEntity
 
     private String frozenIvestmentAmount; //冻结的投资金额
     private String investmentAmount;//可提现投资金额
+    private HashMap<String, Object> invest;
 
     public TkUsers() {
     }
@@ -314,5 +317,13 @@ public class TkUsers extends BaseEntity
 
     public void setInvestmentAmount(String investmentAmount) {
         this.investmentAmount = investmentAmount;
+    }
+
+    public HashMap<String, Object> getInvest() {
+        return invest;
+    }
+
+    public void setInvest(HashMap<String, Object> invest) {
+        this.invest = invest;
     }
 }

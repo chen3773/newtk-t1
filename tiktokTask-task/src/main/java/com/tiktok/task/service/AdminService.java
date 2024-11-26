@@ -8,7 +8,7 @@ import java.util.List;
 public interface AdminService {
     AjaxResult HomePage();
 
-    AjaxResult AddAndDeduct(String amount,String withdraw,String add,String uid,String rebate);
+    AjaxResult AddAndDeduct(String amount,String withdraw,String add,String uid,String rebate,String type);
 
     AjaxResult TakeOut(Long id);
 

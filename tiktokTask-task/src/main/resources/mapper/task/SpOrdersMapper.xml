@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tiktok.task.mapper.SpOrdersMapper">
+    
+    <resultMap type="SpOrders" id="SpOrdersResult">
+        <result property="orderId"    column="order_id"    />
+        <result property="uid"    column="uid"    />
+        <result property="productId"    column="product_id"    />
+        <result property="quantity"    column="quantity"    />
+        <result property="orderDate"    column="order_date"    />
+        <result property="totalPrice"    column="total_price"    />
+        <result property="status"    column="status"    />
+        <result property="shippingAddress"    column="shipping_address"    />
+        <result property="paymentMethod"    column="payment_method"    />
+        <result property="paymentStatus"    column="payment_status"    />
+        <result property="shippingStatus"    column="shipping_status"    />
+        <result property="createdAt"    column="created_at"    />
+        <result property="updatedAt"    column="updated_at"    />
+        <result property="note"    column="note"    />
+    </resultMap>
+
+    <sql id="selectSpOrdersVo">
+        select order_id, uid, product_id, quantity, order_date, total_price, status, shipping_address, payment_method, payment_status, shipping_status, created_at, updated_at, note from sp_orders
+    </sql>
+
+    <select id="selectSpOrdersList" parameterType="SpOrders" resultMap="SpOrdersResult">
+        <include refid="selectSpOrdersVo"/>
+        <where>  
+            <if test="uid != null "> and uid = #{uid}</if>
+            <if test="productId != null "> and product_id = #{productId}</if>
+            <if test="params.beginOrderDate != null and params.beginOrderDate != '' and params.endOrderDate != null and params.endOrderDate != ''"> and order_date between #{params.beginOrderDate} and #{params.endOrderDate}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="paymentStatus != null  and paymentStatus != ''"> and payment_status = #{paymentStatus}</if>
+            <if test="updatedAt != null "> and updated_at = #{updatedAt}</if>
+        </where>
+    </select>
+    
+    <select id="selectSpOrdersByOrderId" parameterType="Long" resultMap="SpOrdersResult">
+        <include refid="selectSpOrdersVo"/>
+        where order_id = #{orderId}
+    </select>
+
+    <insert id="insertSpOrders" parameterType="SpOrders">
+        insert into sp_orders
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="orderId != null">order_id,</if>
+            <if test="uid != null">uid,</if>
+            <if test="productId != null">product_id,</if>
+            <if test="quantity != null">quantity,</if>
+            <if test="orderDate != null">order_date,</if>
+            <if test="totalPrice != null">total_price,</if>
+            <if test="status != null">status,</if>
+            <if test="shippingAddress != null">shipping_address,</if>
+            <if test="paymentMethod != null">payment_method,</if>
+            <if test="paymentStatus != null">payment_status,</if>
+            <if test="shippingStatus != null">shipping_status,</if>
+            <if test="createdAt != null">created_at,</if>
+            <if test="updatedAt != null">updated_at,</if>
+            <if test="note != null">note,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="orderId != null">#{orderId},</if>
+            <if test="uid != null">#{uid},</if>
+            <if test="productId != null">#{productId},</if>
+            <if test="quantity != null">#{quantity},</if>
+            <if test="orderDate != null">#{orderDate},</if>
+            <if test="totalPrice != null">#{totalPrice},</if>
+            <if test="status != null">#{status},</if>
+            <if test="shippingAddress != null">#{shippingAddress},</if>
+            <if test="paymentMethod != null">#{paymentMethod},</if>
+            <if test="paymentStatus != null">#{paymentStatus},</if>
+            <if test="shippingStatus != null">#{shippingStatus},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+            <if test="updatedAt != null">#{updatedAt},</if>
+            <if test="note != null">#{note},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSpOrders" parameterType="SpOrders">
+        update sp_orders
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="uid != null">uid = #{uid},</if>
+            <if test="productId != null">product_id = #{productId},</if>
+            <if test="quantity != null">quantity = #{quantity},</if>
+            <if test="orderDate != null">order_date = #{orderDate},</if>
+            <if test="totalPrice != null">total_price = #{totalPrice},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="shippingAddress != null">shipping_address = #{shippingAddress},</if>
+            <if test="paymentMethod != null">payment_method = #{paymentMethod},</if>
+            <if test="paymentStatus != null">payment_status = #{paymentStatus},</if>
+            <if test="shippingStatus != null">shipping_status = #{shippingStatus},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+            <if test="note != null">note = #{note},</if>
+        </trim>
+        where order_id = #{orderId}
+    </update>
+
+    <delete id="deleteSpOrdersByOrderId" parameterType="Long">
+        delete from sp_orders where order_id = #{orderId}
+    </delete>
+
+    <delete id="deleteSpOrdersByOrderIds" parameterType="String">
+        delete from sp_orders where order_id in 
+        <foreach item="orderId" collection="array" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+    </delete>
+</mapper>

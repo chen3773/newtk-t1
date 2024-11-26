@@ -34,14 +34,16 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectTkUsersVo">
-        SELECT tk.uid, tk.username, tk.password, tk.nickname, tk.svip_level, tk.totareward, tk.balance, tk.non_withdrawable_balance, tk.usdt_address, tk.registration_time, tk.avatar, tk.invitation_code, tk.referrer_id, tk.user_status, tk.withdraw,tk.payment_password, tk.blockchain_name, tk.create_by, tk.create_time, tk.update_by, tk.update_time, tk.remark,tk.deleted,tk.frozen_investment_amount,tk.investment_amount, sys.login_date AS last_login_date,deleted
+        SELECT tk.uid, tk.username, tk.password, tk.nickname, tk.svip_level, tk.totareward, tk.balance, tk.non_withdrawable_balance, tk.usdt_address, tk.registration_time, tk.avatar, tk.invitation_code, tk.referrer_id, tk.user_status, tk.withdraw, tk.payment_password, tk.blockchain_name, tk.create_by, tk.create_time, tk.update_by, tk.update_time, tk.remark, tk.deleted, tk.frozen_investment_amount, tk.investment_amount,
+               (SELECT MAX(login_date) FROM sys_user WHERE user_name = tk.username) AS last_login_date
         FROM tk_users AS tk
-                 JOIN sys_user AS sys ON tk.username = sys.user_name
     </sql>
 
     <select id="selectTkUsersList" parameterType="TkUsers" resultMap="TkUsersResult">
         <include refid="selectTkUsersVo"/>
         <where>
+            AND tk.deleted!=1
+
             <if test="uid != null  and uid != ''"> and uid= #{uid}</if>
             <if test="username != null  and username != ''"> and username= #{username}</if>
             <if test="nickname != null  and nickname != ''"> and nickname= #{nickname}</if>
@@ -50,9 +52,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="params.beginRegistrationTime != null and params.beginRegistrationTime != '' and params.endRegistrationTime != null and params.endRegistrationTime != ''"> and tk.registration_time between #{params.beginRegistrationTime} and #{params.endRegistrationTime}</if>
             <if test="referrerId != null "> and tk.referrer_id = #{referrerId}</if>
             <if test="createBy != null "> and tk.create_by = #{createBy}</if>
+            ORDER BY uid DESC
         </where>
-        AND tk.deleted!=1
-        ORDER BY uid DESC
+
     </select>
 
     <select id="selectTkUsersBlurList" parameterType="TkUsers" resultMap="TkUsersResult">

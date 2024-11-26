@@ -28,11 +28,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="returnRate"    column="return_rate"    />
         <result property="dividendDays"    column="dividend_days"    />
         <result property="type"    column="type"    />
+        <result property="participants"    column="participants"    />
     </resultMap>
 
 
     <sql id="selectLcProductVo">
-        select product_id, product_title, main_image_url, detail_image_url, product_description, total_amount, level, total_shares, sold_shares, start_time, dividend_start_time, end_time, create_by, create_time, update_by, update_time, state, remark, deleted, cycle, return_rate, dividend_days, type from lc_product
+        select product_id, product_title, main_image_url, detail_image_url, product_description, total_amount, level, total_shares, sold_shares, start_time, dividend_start_time, end_time, create_by, create_time, update_by, update_time, state, remark, deleted, cycle, return_rate, dividend_days, type,participants from lc_product
     </sql>
 
 
@@ -60,6 +61,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="state != null  and state != ''"> and state = #{state}</if>
             <if test="type != null  and type != ''"> and type = #{type}</if>
         </where>
+        and NOW() between start_time and end_time
     </select>
 
     <insert id="insertLcProduct" parameterType="LcProduct" useGeneratedKeys="true" keyProperty="productId">
@@ -87,6 +89,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="returnRate != null">return_rate,</if>
             <if test="dividendDays != null">dividend_days,</if>
             <if test="type != null">type,</if>
+            <if test="participants != null">participants,</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="productTitle != null and productTitle != ''">#{productTitle},</if>
@@ -111,6 +114,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="returnRate != null">#{returnRate},</if>
             <if test="dividendDays != null">#{dividendDays},</if>
             <if test="type != null">#{type},</if>
+            <if test="participants != null">#{participants},</if>
         </trim>
     </insert>
 
@@ -139,6 +143,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="returnRate != null">return_rate = #{returnRate},</if>
             <if test="dividendDays != null">dividend_days = #{dividendDays},</if>
             <if test="type != null">type = #{type},</if>
+            <if test="participants != null">participants = #{participants},</if>
         </trim>
         where product_id = #{productId}
     </update>
@@ -147,10 +152,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         delete from lc_product where product_id = #{productId}
     </delete>
 
-    <delete id="deleteLcProductByProductIds" parameterType="String">
-        delete from lc_product where product_id in 
+    <update id="deleteLcProductByProductIds" parameterType="String">
+        update lc_product
+        set deleted = 1
+        where product_id in
         <foreach item="productId" collection="array" open="(" separator="," close=")">
             #{productId}
         </foreach>
-    </delete>
+    </update>
 </mapper>

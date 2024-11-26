@@ -19,6 +19,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="remainingDays"    column="remaining_days"    />
         <result property="status"    column="status"    />
         <result property="orderNumber"    column="order_number"    />
+        <result property="productType"    column="product_type"    />
+        <result property="productTitle"    column="product_title"    />
     </resultMap>
 
 
@@ -31,7 +33,27 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
 
     <sql id="selectLcSubscriptionVo">
-        select id, user_id, product_id, subscription_count, purchase_price, dividend_start_time, purchase_time, cumulative_dividend, expiration_time, dividend_interval_days, dividend_days, remaining_days, status, order_number from lc_subscription
+        SELECT
+            s.id,
+            s.user_id,
+            s.product_id,
+            s.subscription_count,
+            s.purchase_price,
+            s.dividend_start_time,
+            s.purchase_time,
+            s.cumulative_dividend,
+            s.expiration_time,
+            s.dividend_interval_days,
+            s.dividend_days,
+            s.remaining_days,
+            s.status,
+            s.order_number,
+            p.type AS product_type,
+            p.product_title
+        FROM
+            lc_subscription s
+                JOIN
+            lc_product p ON s.product_id = p.product_id
     </sql>
 
 

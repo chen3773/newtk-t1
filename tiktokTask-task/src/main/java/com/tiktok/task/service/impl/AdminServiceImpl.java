@@ -63,114 +63,159 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public AjaxResult AddAndDeduct(String amount,String withdraw,String add,String uid,String rebate) {
+    public AjaxResult AddAndDeduct(String amount,String withdraw,String add,String uid,String rebate,String type) {
         Assert.isTrue(!(add.equals("no")&&rebate.equals("yes")),"只有加款才能勾选返利");
         String orderNumber = OrderNumberGenerator.generateOrderNumber();
 
-
         TkUsers tkUsers = tkUsersMapper.selectTkUsersByUid(Long.valueOf(uid));
-        String str = "top-up:";
+        if(type.equals("0")){
+            String str = "top-up:";
 
-        BigDecimal bigDecimal = new BigDecimal(amount);
-        if(withdraw.equals("yes")){
-            if(add.equals("yes")){
-                tkUsers.setBalance(new BigDecimal(tkUsers.getBalance())
-                        .add(bigDecimal).toString());
-            }else {
-                tkUsers.setBalance(new BigDecimal(tkUsers.getBalance())
-                        .subtract(bigDecimal).toString());
-            }
-        }else if(withdraw.equals("no")){
-            if(add.equals("yes")){
-                tkUsers.setBalance(new BigDecimal(tkUsers.getBalance())
-                        .add(bigDecimal).toString());
-                tkUsers.setNonWithdrawableBalance(new BigDecimal(tkUsers.getNonWithdrawableBalance())
-                        .add(bigDecimal).toString());
-            }else {
-                tkUsers.setBalance(new BigDecimal(tkUsers.getBalance())
-                        .subtract(bigDecimal).toString());
-                tkUsers.setNonWithdrawableBalance(new BigDecimal(tkUsers.getNonWithdrawableBalance())
-                        .subtract(bigDecimal).toString());
-            }
-
-        }
-        tkUsersMapper.updateTkUsers(tkUsers);
-
-        if(add.equals("no")){
-            bigDecimal = new BigDecimal(amount).negate();
-            str = "Deduct money:";
-        }
-        //添加记录
-        TkWallettransactions tkWallettransactions = new TkWallettransactions();
-        tkWallettransactions.setUserid(Long.valueOf(uid));
-        tkWallettransactions.setTransactionType(str);
-        tkWallettransactions.setAmount(bigDecimal);
-        tkWallettransactions.setTransactionDate(new Date());
-        tkWallettransactions.setOrderNumber(orderNumber);
-        tkWallettransactions.setWithdraw(withdraw);
-        tkWallettransactions.setFundBalance(new BigDecimal(tkUsers.getBalance()));
-        tkWallettransactions.setDescription(str+amount);
-        tkWallettransactions.setCategory("income");
-        tkWallettransactions.setTransactionStatus("已完成");
-        tkWallettransactionsMapper.insertTkWallettransactions(tkWallettransactions);
-
-
-        if(rebate.equals("yes")){
-            //分成
-            //开始分佣
-            TkRoyaltySetting tkRoyaltySetting = tkRoyaltySettingMapper.selectTkRoyaltySettingById(1L);//分佣比例
-            //获取出上级邀请人
-            TkInvitation tkInvitation = new TkInvitation();
-            tkInvitation.setInviteeId(Long.valueOf(uid));
-            List<TkInvitation> tkInvitations = tkInvitationMapper.selectTkInvitationList(tkInvitation);
-            for (int i = 0; i < tkInvitations.size(); i++) {
-                Long inviterId = tkInvitations.get(i).getInviterId();//上级id
-                Long id2 = tkInvitations.get(i).getId();
-                Long level = tkInvitations.get(i).getLevel();
-                BigDecimal rewardAmount = new BigDecimal(amount); // 假设这个方法返回一个 BigDecimal
-                String royalty = "";
-
-
-                // 根据 level 获取 royalty
-                if (level == 1) {
-                    royalty = tkRoyaltySetting.getFirst();
-                } else if (level == 2) {
-                    royalty = tkRoyaltySetting.getTwo();
-                } else if (level == 3) {
-                    royalty = tkRoyaltySetting.getThree();
+            BigDecimal bigDecimal = new BigDecimal(amount);
+            if(withdraw.equals("yes")){
+                if(add.equals("yes")){
+                    tkUsers.setBalance(new BigDecimal(tkUsers.getBalance())
+                            .add(bigDecimal).toString());
+                }else {
+                    tkUsers.setBalance(new BigDecimal(tkUsers.getBalance())
+                            .subtract(bigDecimal).toString());
                 }
-                // 将 royalty 转换为 BigDecimal
-                BigDecimal royaltyAmount = new BigDecimal(royalty);
-                // 计算 rewardAmount * royaltyAmount / 100    添加佣金记录
-                BigDecimal result = rewardAmount.multiply(royaltyAmount).divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
+            }else if(withdraw.equals("no")){
+                if(add.equals("yes")){
+                    tkUsers.setBalance(new BigDecimal(tkUsers.getBalance())
+                            .add(bigDecimal).toString());
+                    tkUsers.setNonWithdrawableBalance(new BigDecimal(tkUsers.getNonWithdrawableBalance())
+                            .add(bigDecimal).toString());
+                }else {
+                    tkUsers.setBalance(new BigDecimal(tkUsers.getBalance())
+                            .subtract(bigDecimal).toString());
+                    tkUsers.setNonWithdrawableBalance(new BigDecimal(tkUsers.getNonWithdrawableBalance())
+                            .subtract(bigDecimal).toString());
+                }
 
-                //给用户添加余额
-                TkUsers tkUser = tkUsersMapper.selectTkUsersByUid(inviterId);
-                BigDecimal balance = new BigDecimal(tkUser.getBalance()).add(result);
-                tkUser.setBalance(balance.toString());
-                Assert.isTrue(tkUsersMapper.updateTkUsers(tkUser)!=0,"网络异常...");
-
-
-                //添加记录
-                TkWallettransactions tkWallettransaction = new TkWallettransactions();
-                tkWallettransaction.setUserid(inviterId);
-                tkWallettransaction.setFundBalance(balance);
-                tkWallettransaction.setCategory("income");
-                tkWallettransaction.setDescription("#"+uid+"Top-up bonus");
-                tkWallettransaction.setAmount(result);
-                tkWallettransaction.setTransactionStatus("已完成");
-                tkWallettransaction.setUpdatedAt(new Date());
-                tkWallettransaction.setTransactionType("income");
-                tkWallettransaction.setTransactionDate(new Date());
-                tkWallettransaction.setOrderNumber(orderNumber);
-                tkWallettransaction.setWithdraw("yes");
-                Assert.isTrue(tkWallettransactionsMapper.insertTkWallettransactions(tkWallettransaction)!=0,"网络异常...");
-                //更新邀请关系表金额
-                tkInvitations.get(i).setAmount(new BigDecimal(tkInvitations.get(i).getAmount()).add(result).toString());
-                tkInvitationMapper.updateTkInvitation(tkInvitations.get(i));
             }
-        }
+            tkUsersMapper.updateTkUsers(tkUsers);
 
+            if(add.equals("no")){
+                bigDecimal = new BigDecimal(amount).negate();
+                str = "Deduct money:";
+            }
+            //添加记录
+            TkWallettransactions tkWallettransactions = new TkWallettransactions();
+            tkWallettransactions.setUserid(Long.valueOf(uid));
+            tkWallettransactions.setTransactionType(str);
+            tkWallettransactions.setAmount(bigDecimal);
+            tkWallettransactions.setTransactionDate(new Date());
+            tkWallettransactions.setOrderNumber(orderNumber);
+            tkWallettransactions.setWithdraw(withdraw);
+            tkWallettransactions.setFundBalance(new BigDecimal(tkUsers.getBalance()));
+            tkWallettransactions.setDescription(str+amount);
+            tkWallettransactions.setCategory("income");
+            tkWallettransactions.setTransactionStatus("已完成");
+            tkWallettransactionsMapper.insertTkWallettransactions(tkWallettransactions);
+
+
+            if(rebate.equals("yes")){
+                //分成
+                //开始分佣
+                TkRoyaltySetting tkRoyaltySetting = tkRoyaltySettingMapper.selectTkRoyaltySettingById(1L);//分佣比例
+                //获取出上级邀请人
+                TkInvitation tkInvitation = new TkInvitation();
+                tkInvitation.setInviteeId(Long.valueOf(uid));
+                List<TkInvitation> tkInvitations = tkInvitationMapper.selectTkInvitationList(tkInvitation);
+                for (int i = 0; i < tkInvitations.size(); i++) {
+                    Long inviterId = tkInvitations.get(i).getInviterId();//上级id
+                    Long id2 = tkInvitations.get(i).getId();
+                    Long level = tkInvitations.get(i).getLevel();
+                    BigDecimal rewardAmount = new BigDecimal(amount); // 假设这个方法返回一个 BigDecimal
+                    String royalty = "";
+
+
+                    // 根据 level 获取 royalty
+                    if (level == 1) {
+                        royalty = tkRoyaltySetting.getFirst();
+                    } else if (level == 2) {
+                        royalty = tkRoyaltySetting.getTwo();
+                    } else if (level == 3) {
+                        royalty = tkRoyaltySetting.getThree();
+                    }
+                    // 将 royalty 转换为 BigDecimal
+                    BigDecimal royaltyAmount = new BigDecimal(royalty);
+                    // 计算 rewardAmount * royaltyAmount / 100    添加佣金记录
+                    BigDecimal result = rewardAmount.multiply(royaltyAmount).divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
+
+                    //给用户添加余额
+                    TkUsers tkUser = tkUsersMapper.selectTkUsersByUid(inviterId);
+                    BigDecimal balance = new BigDecimal(tkUser.getBalance()).add(result);
+                    tkUser.setBalance(balance.toString());
+                    Assert.isTrue(tkUsersMapper.updateTkUsers(tkUser)!=0,"网络异常...");
+
+
+                    //添加记录
+                    TkWallettransactions tkWallettransaction = new TkWallettransactions();
+                    tkWallettransaction.setUserid(inviterId);
+                    tkWallettransaction.setFundBalance(balance);
+                    tkWallettransaction.setCategory("income");
+                    tkWallettransaction.setDescription("#"+uid+"Top-up bonus");
+                    tkWallettransaction.setAmount(result);
+                    tkWallettransaction.setTransactionStatus("已完成");
+                    tkWallettransaction.setUpdatedAt(new Date());
+                    tkWallettransaction.setTransactionType("income");
+                    tkWallettransaction.setTransactionDate(new Date());
+                    tkWallettransaction.setOrderNumber(orderNumber);
+                    tkWallettransaction.setWithdraw("yes");
+                    Assert.isTrue(tkWallettransactionsMapper.insertTkWallettransactions(tkWallettransaction)!=0,"网络异常...");
+                    //更新邀请关系表金额
+                    tkInvitations.get(i).setAmount(new BigDecimal(tkInvitations.get(i).getAmount()).add(result).toString());
+                    tkInvitationMapper.updateTkInvitation(tkInvitations.get(i));
+                }
+            }
+        }else if(type.equals("1")){
+            String str = "top-up:";
+
+            BigDecimal bigDecimal = new BigDecimal(amount);
+            if(withdraw.equals("yes")){
+                if(add.equals("yes")){
+                    tkUsers.setInvestmentAmount(new BigDecimal(tkUsers.getInvestmentAmount())
+                            .add(bigDecimal).toString());
+                }else {
+                    tkUsers.setInvestmentAmount(new BigDecimal(tkUsers.getInvestmentAmount())
+                            .subtract(bigDecimal).toString());
+                }
+            }else if(withdraw.equals("no")){
+                if(add.equals("yes")){
+                    tkUsers.setInvestmentAmount(new BigDecimal(tkUsers.getInvestmentAmount())
+                            .add(bigDecimal).toString());
+                    tkUsers.setFrozenIvestmentAmount(new BigDecimal(tkUsers.getFrozenIvestmentAmount())
+                            .add(bigDecimal).toString());
+                }else {
+                    tkUsers.setInvestmentAmount(new BigDecimal(tkUsers.getInvestmentAmount())
+                            .subtract(bigDecimal).toString());
+                    tkUsers.setFrozenIvestmentAmount(new BigDecimal(tkUsers.getFrozenIvestmentAmount())
+                            .subtract(bigDecimal).toString());
+                }
+
+            }
+            tkUsersMapper.updateTkUsers(tkUsers);
+
+            if(add.equals("no")){
+                bigDecimal = new BigDecimal(amount).negate();
+                str = "Deduct money:";
+            }
+            //添加记录
+            TkWallettransactions tkWallettransactions = new TkWallettransactions();
+            tkWallettransactions.setUserid(Long.valueOf(uid));
+            tkWallettransactions.setTransactionType(str);
+            tkWallettransactions.setAmount(bigDecimal);
+            tkWallettransactions.setTransactionDate(new Date());
+            tkWallettransactions.setOrderNumber(orderNumber);
+            tkWallettransactions.setWithdraw(withdraw);
+            tkWallettransactions.setFundBalance(new BigDecimal(tkUsers.getBalance()));
+            tkWallettransactions.setDescription(str+amount);
+            tkWallettransactions.setCategory("income");
+            tkWallettransactions.setTransactionStatus("已完成");
+            tkWallettransactionsMapper.insertTkWallettransactions(tkWallettransactions);
+        }
 
         return AjaxResult.success(tkUsers);
     }
@@ -180,6 +225,7 @@ public class AdminServiceImpl implements AdminService {
     public AjaxResult TakeOut(Long id) {
         TkWallettransactions tkWallettransactions = tkWallettransactionsMapper.selectTkWallettransactionsById(id);
         Assert.isTrue(tkWallettransactions.getTransactionType().equals("top-up:"),"非充值订单不能扣除回滚操作");
+        Assert.isTrue(tkWallettransactions.getOrderNumber()!=null,"这笔交易不能回滚");
         String orderNumber = tkWallettransactions.getOrderNumber();
         TkWallettransactions tkWallettransactionsBody = new TkWallettransactions();
         tkWallettransactionsBody.setOrderNumber(orderNumber);

@@ -116,16 +116,10 @@ public class TkTasksController extends BaseController
         if(completedQuantity == null){
             tkTasks.setCompletedQuantity(0L);
         }
-
-
-
         Assert.isTrue(tkTasks.getRewardAmount() != null && tkTasks.getRewardAmount().compareTo(BigDecimal.ONE) >= 0,
                 "奖励金额不能为空或者小于1");
         Assert.isTrue(tkTasks.getCompletedQuantity()<=tkTasks.getTotalQuantity()&&
                 tkTasks.getSurplusquantity()<=tkTasks.getTotalQuantity(),"任务数量错误");
-
-
-
         return toAjax(tkTasksService.insertTkTasks(tkTasks));
     }
 
@@ -149,13 +143,19 @@ public class TkTasksController extends BaseController
     @PreAuthorize("@ss.hasPermi('task:tasks:edit')")
     @Log(title = "任务列", businessType = BusinessType.UPDATE)
     @PostMapping("/BatchChanges")
-    public AjaxResult BatchChanges(@RequestBody Map<String, Object> requestData)
-    {
+    public AjaxResult BatchChanges(@RequestBody Map<String, Object> requestData) {
         List<Long> idList = (List<Long>) requestData.get("idList");
-        String rewardAmount =  requestData.get("rewardAmount").toString();
+        String rewardAmount = requestData.get("rewardAmount") != null ? requestData.get("rewardAmount").toString() : null;
         String title = (String) requestData.get("title");
-        return toAjax(tkTasksService.batchUpdateTasks(idList,rewardAmount,title));
+
+        if (rewardAmount == null && title == null) {
+            return toAjax(0);
+        }
+
+        return toAjax(tkTasksService.batchUpdateTasks(idList, rewardAmount, title));
     }
+
+
 
 
     /**

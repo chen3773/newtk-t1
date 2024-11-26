@@ -88,6 +88,7 @@ public interface ISysRoleService
      * @param roleIds 角色id
      */
     public void checkRoleDataScope(Long... roleIds);
+    public void checkRoleDataScope2(Long... roleIds);
 
     /**
      * 通过角色ID查询角色使用数量

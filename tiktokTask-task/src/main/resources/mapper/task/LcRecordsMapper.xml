@@ -14,11 +14,29 @@
         <result property="type"    column="type"    />
         <result property="status"    column="status"    />
         <result property="timestamp"    column="timestamp"    />
+        <result property="productType"    column="product_type"    />
+        <result property="productTitle"    column="product_title"    />
     </resultMap>
 
     <sql id="selectLcRecordsVo">
-        select id, product_id, order_number, user_id, amount, title, type, status, timestamp from lc_records
+        SELECT
+            r.id,
+            r.product_id,
+            r.order_number,
+            r.user_id,
+            r.amount,
+            r.title,
+            r.type AS record_type,
+            r.status,
+            r.timestamp,
+            p.type AS product_type,
+            p.product_title
+        FROM
+            lc_records r
+                JOIN
+            lc_product p ON r.product_id = p.product_id
     </sql>
+
 
     <select id="selectLcRecordsList" parameterType="LcRecords" resultMap="LcRecordsResult">
         <include refid="selectLcRecordsVo"/>
@@ -28,7 +46,7 @@
             <if test="userId != null "> and user_id = #{userId}</if>
             <if test="amount != null  and amount != ''"> and amount = #{amount}</if>
             <if test="title != null  and title != ''"> and title = #{title}</if>
-            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="type != null  and type != ''"> and  r.type = #{type}</if>
             <if test="status != null  and status != ''"> and status = #{status}</if>
             <if test="params.beginTimestamp != null and params.beginTimestamp != '' and params.endTimestamp != null and params.endTimestamp != ''"> and timestamp between #{params.beginTimestamp} and #{params.endTimestamp}</if>
         </where>

@@ -54,17 +54,17 @@ public class LcProduct extends BaseEntity
     private Long soldShares;
 
     /** 开始时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "MM/dd/yyyy")
     @Excel(name = "开始时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date startTime;
 
     /** 分红开始时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "MM/dd/yyyy")
     @Excel(name = "分红开始时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date dividendStartTime;
 
     /** 结束时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "MM/dd/yyyy")
     @Excel(name = "结束时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date endTime;
 
@@ -96,6 +96,8 @@ public class LcProduct extends BaseEntity
      * 总额
      */
     private String grossAmount;
+    private String participants;
+    private String estimatedIncome;
 
     public void setProductId(Long productId) 
     {
@@ -293,5 +295,21 @@ public class LcProduct extends BaseEntity
 
     public void setDividendStartTime(Date dividendStartTime) {
         this.dividendStartTime = dividendStartTime;
+    }
+
+    public String getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(String participants) {
+        this.participants = participants;
+    }
+
+    public String getEstimatedIncome() {
+        return estimatedIncome;
+    }
+
+    public void setEstimatedIncome(String estimatedIncome) {
+        this.estimatedIncome = estimatedIncome;
     }
 }

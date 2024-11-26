@@ -1,6 +1,8 @@
 package com.tiktok.task.service.impl;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Date;
 import java.util.List;
 import com.tiktok.common.utils.DateUtils;
 import com.tiktok.task.util.PercentageCalculator;
@@ -35,6 +37,17 @@ public class LcProductServiceImpl implements ILcProductService
         lcProduct.setGrossAmount((new BigDecimal(lcProduct.getTotalShares()).multiply(lcProduct.getTotalAmount())).toString());
         double v = PercentageCalculator.calculatePercentage(lcProduct.getTotalShares().intValue(), lcProduct.getSoldShares().intValue());
         lcProduct.setCompleted(v+"%");
+        BigDecimal  cycle = new BigDecimal(lcProduct.getCycle());//周期
+        BigDecimal dividendDays = new BigDecimal(lcProduct.getDividendDays());//天数
+        BigDecimal returnRate = new BigDecimal(lcProduct.getReturnRate());//收益
+        //计算产品大概可以产生多少收益
+        // 计算 cycle / dividendDays 并取整
+        BigDecimal divisionResult = cycle.divide(dividendDays, 0, RoundingMode.DOWN);
+
+        // 结果乘以 returnRate 并保留两位小数
+        BigDecimal finalResult = divisionResult.multiply(returnRate).setScale(2, RoundingMode.HALF_UP);
+        lcProduct.setEstimatedIncome(finalResult.toString());
+
         return lcProduct;
     }
 
@@ -104,16 +117,34 @@ public class LcProductServiceImpl implements ILcProductService
     public List<LcProduct> UserSelectLcProductList(LcProduct lcProduct) {
         LcProduct newlcProduct =new LcProduct();
         newlcProduct.setDeleted("0");
+        newlcProduct.setState("0");
         newlcProduct.setType(lcProduct.getType());
         List<LcProduct> lcProducts = lcProductMapper.UserSelectLcProductList(lcProduct);
         for (int i = 0; i < lcProducts.size(); i++) {
             Long totalShares = lcProducts.get(i).getTotalShares();//份额数量
             Long soldShares = lcProducts.get(i).getSoldShares();//售出数量
             BigDecimal totalAmount = lcProducts.get(i).getTotalAmount();//单价
+
+
             double v = PercentageCalculator.calculatePercentage(totalShares.intValue(), soldShares.intValue());
             lcProducts.get(i).setCompleted(v+"%");
             lcProducts.get(i).setGrossAmount((new BigDecimal(totalShares).multiply(totalAmount)).toString());
+            Date startTime = lcProducts.get(i).getStartTime();
+
+            BigDecimal  cycle = new BigDecimal(lcProducts.get(i).getCycle());//周期
+            BigDecimal dividendDays = new BigDecimal(lcProducts.get(i).getDividendDays());//天数
+            BigDecimal returnRate = new BigDecimal(lcProducts.get(i).getReturnRate());//收益
+            //计算产品大概可以产生多少收益
+            // 计算 cycle / dividendDays 并取整
+            BigDecimal divisionResult = cycle.divide(dividendDays, 0, RoundingMode.DOWN);
+
+            // 结果乘以 returnRate 并保留两位小数
+            BigDecimal finalResult = divisionResult.multiply(returnRate).setScale(2, RoundingMode.HALF_UP);
+            lcProducts.get(i).setEstimatedIncome(finalResult.toString());
         }
+
+
+
         return lcProducts;
     }
 }

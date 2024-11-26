@@ -36,12 +36,12 @@ public class LcSubscription extends BaseEntity
     @Excel(name = "购入价格")
     private String purchasePrice;
     /** 分红开始时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "MM/dd/yyyy")
     @Excel(name = "分红开始时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date dividendStartTime;
 
     /** 购入时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "MM/dd/yyyy")
     @Excel(name = "购入时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date purchaseTime;
 
@@ -50,7 +50,7 @@ public class LcSubscription extends BaseEntity
     private String cumulativeDividend;
 
     /** 过期时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "MM/dd/yyyy")
     @Excel(name = "过期时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date expirationTime;
     /** 分红间隔天数 */
@@ -71,7 +71,8 @@ public class LcSubscription extends BaseEntity
     /** 订单号 */
     @Excel(name = "订单号")
     private String orderNumber;
-
+    private String productTitle;
+    private String productType;
 
     public void setId(Long id) 
     {
@@ -206,5 +207,21 @@ public class LcSubscription extends BaseEntity
 
     public void setDividendStartTime(Date dividendStartTime) {
         this.dividendStartTime = dividendStartTime;
+    }
+
+    public String getProductTitle() {
+        return productTitle;
+    }
+
+    public void setProductTitle(String productTitle) {
+        this.productTitle = productTitle;
+    }
+
+    public String getProductType() {
+        return productType;
+    }
+
+    public void setProductType(String productType) {
+        this.productType = productType;
     }
 }
