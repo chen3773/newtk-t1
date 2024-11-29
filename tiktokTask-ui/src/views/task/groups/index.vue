@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="分组名称" prop="groupName">
+      <el-form-item label="商品分类" prop="groupName">
         <el-input
           v-model="queryParams.groupName"
-          placeholder="请输入分组名称"
+          placeholder="请输入商品分类"
           clearable
           @keyup.enter.native="handleQuery"
         />
@@ -73,8 +73,8 @@
 
     <el-table v-loading="loading" :data="groupsList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="分组ID" align="center" prop="id" />
-      <el-table-column label="分组名称" align="center" prop="groupName" />
+      <!-- <el-table-column label="ID" align="center" prop="id" /> -->
+      <el-table-column label="商品分类" align="center" prop="groupName" />
       <el-table-column label="状态" align="center" prop="status">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.on_off" :value="scope.row.status"/>
@@ -111,8 +111,8 @@
     <!-- 添加或修改商品分类对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="分组名称" prop="groupName">
-          <el-input v-model="form.groupName" placeholder="请输入分组名称" />
+        <el-form-item label="商品分类" prop="groupName">
+          <el-input v-model="form.groupName" placeholder="请输入商品分类" />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">

@@ -147,9 +147,9 @@
         <template slot-scope="scope">
           <div style="color: #1890ff;text-align: left;">余额：{{ scope.row.balance }}</div>
           <div style="color: #ff9292;text-align: left;">不可提现金额：{{ scope.row.nonWithdrawableBalance }}</div>
-          <div style="color: #1890ff;text-align: left;">投资账户余额：{{ scope.row.investmentAmount }}</div>
+          <!-- <div style="color: #1890ff;text-align: left;">投资账户余额：{{ scope.row.investmentAmount }}</div>
           <div style="color: #ff9292;text-align: left;">投资账户冻结：{{ scope.row.frozenIvestmentAmount }}</div>
-          <div style="color: #1890ff;text-align: left;">投资获利：{{ scope.row.invest.projectIncome }}</div>
+          <div style="color: #1890ff;text-align: left;">投资获利：{{ scope.row.invest.projectIncome }}</div> -->
           <div style="color: #1890ff;text-align: left;">参与项目数：{{ scope.row.invest.myProject }}</div>
           <div style="color: #1890ff;text-align: left;">质押冻结金额：{{ scope.row.invest.frozenAmount }}</div>
         </template>
@@ -261,12 +261,12 @@
         <el-form-item label="不可提现余额" prop="nonWithdrawableBalance" v-if="title != '添加用户信息'">
           <el-input v-model="form.nonWithdrawableBalance" placeholder="请输入不可提现余额" />
         </el-form-item>
-        <el-form-item label="投资账户余额" prop="investmentAmount" v-if="title != '添加用户信息'">
+        <!-- <el-form-item label="投资账户余额" prop="investmentAmount" v-if="title != '添加用户信息'">
           <el-input v-model="form.investmentAmount" placeholder="请输入投资账户余额" />
         </el-form-item>
         <el-form-item label="投资账户冻结" prop="frozenIvestmentAmount" v-if="title != '添加用户信息'">
           <el-input v-model="form.frozenIvestmentAmount" placeholder="请输入投资账户冻结" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="钱包地址" prop="usdtAddress" v-if="title != '添加用户信息'">
           <el-input v-model="form.usdtAddress" placeholder="请输入钱包地址" />
         </el-form-item>
@@ -367,7 +367,7 @@
     </el-dialog>
     <el-dialog :close-on-click-modal="false" title="资金变动" :visible.sync="open3" width="500px" append-to-body>
       <el-form ref="form3" :model="form3" label-width="100px">
-        <el-form-item label="资金类型" prop="type">
+        <!-- <el-form-item label="资金类型" prop="type">
           <el-radio-group v-model="form3.type">
             <el-radio
               v-for="dict in yesno2"
@@ -375,7 +375,7 @@
               :label="dict.value"
             >{{dict.label}}</el-radio>
           </el-radio-group>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="金额类型" prop="add">
           <el-radio-group v-model="form3.add">
             <el-radio

@@ -1,14 +1,14 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="" prop="id">
+      <!-- <el-form-item label="" prop="id">
         <el-input
           v-model="queryParams.id"
           placeholder="请输入"
           clearable
           @keyup.enter.native="handleQuery"
         />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="名称" prop="productName">
         <el-input
           v-model="queryParams.productName"
@@ -25,14 +25,14 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="库存" prop="productInventory">
+      <!-- <el-form-item label="库存" prop="productInventory">
         <el-input
           v-model="queryParams.productInventory"
           placeholder="请输入库存"
           clearable
           @keyup.enter.native="handleQuery"
         />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="创建时间">
         <el-date-picker
           v-model="daterangeCreateTime"
@@ -44,8 +44,8 @@
           end-placeholder="结束日期"
         ></el-date-picker>
       </el-form-item>
-      <el-form-item label="0上架 1下架" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择0上架 1下架" clearable>
+      <el-form-item label="是否上架" prop="status">
+        <el-select v-model="queryParams.status" placeholder="请选择是否上架" clearable>
           <el-option
             v-for="dict in dict.type.on_off"
             :key="dict.value"
@@ -61,6 +61,20 @@
           clearable
           @keyup.enter.native="handleQuery"
         />
+      </el-form-item>
+      <el-form-item label="语言" prop="language">
+        <el-select
+          v-model="queryParams.language"
+          placeholder="请选择语言"
+          clearable
+        >
+          <el-option
+            v-for="dict in languageList"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -116,7 +130,7 @@
 
     <el-table v-loading="loading" :data="spproductList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="" align="center" prop="id" />
+      <!-- <el-table-column label="" align="center" prop="id" /> -->
       <el-table-column label="名称" align="center" prop="productName" />
       <el-table-column label="价格" align="center" prop="productPrice" />
       <el-table-column label="库存" align="center" prop="productInventory" />
@@ -132,13 +146,13 @@
         </template>
       </el-table-column>
       <el-table-column label="备注" align="center" prop="remark" />
-      <el-table-column label="0上架 1下架" align="center" prop="status">
+      <el-table-column label="是否上架" align="center" prop="status">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.on_off" :value="scope.row.status"/>
         </template>
       </el-table-column>
       <el-table-column label="分组id" align="center" prop="groupId" />
-      <el-table-column label="" align="center" prop="deleted" />
+      <!-- <el-table-column label="" align="center" prop="deleted" /> -->
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -170,9 +184,20 @@
     <!-- 添加或修改产品对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="名称" prop="productName">
-          <el-input v-model="form.productName" placeholder="请输入名称" />
+        <el-form-item label="语言" prop="language">
+          <el-radio-group v-model="language">
+            <el-radio
+              v-for="dict in languageList"
+              :key="dict.value"
+              :label="dict.value"
+              >{{ dict.label }}</el-radio
+            >
+          </el-radio-group>
         </el-form-item>
+        <el-form-item label="名称" prop="productName">
+          <el-input v-model="productNameObj[language]" placeholder="请输入名称" />
+        </el-form-item>
+        
         <el-form-item label="价格" prop="productPrice">
           <el-input v-model="form.productPrice" placeholder="请输入价格" />
         </el-form-item>
@@ -183,7 +208,7 @@
           <image-upload v-model="form.productImg"/>
         </el-form-item>
         <el-form-item label="详细描述" prop="detailedDescription">
-          <el-input v-model="form.detailedDescription" type="textarea" placeholder="请输入内容" />
+          <el-input v-model="detailedDescriptionObj[language]" type="textarea" placeholder="请输入内容" />
         </el-form-item>
         <el-form-item label="详情多图" prop="productDetails">
           <image-upload v-model="form.productDetails"/>
@@ -191,7 +216,7 @@
         <el-form-item label="备注" prop="remark">
           <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" />
         </el-form-item>
-        <el-form-item label="0上架 1下架" prop="status">
+        <el-form-item label="是否上架" prop="status">
           <el-radio-group v-model="form.status">
             <el-radio
               v-for="dict in dict.type.on_off"
@@ -203,9 +228,9 @@
         <el-form-item label="分组id" prop="groupId">
           <el-input v-model="form.groupId" placeholder="请输入分组id" />
         </el-form-item>
-        <el-form-item label="" prop="deleted">
+        <!-- <el-form-item label="" prop="deleted">
           <el-input v-model="form.deleted" placeholder="请输入" />
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -257,12 +282,29 @@ export default {
         createTime: null,
         status: null,
         groupId: null,
+        language: "Chinese",
       },
       // 表单参数
       form: {},
       // 表单校验
       rules: {
-      }
+      },
+      language: "Chinese",
+      productNameObj: {
+        Chinese: "",
+        English: "",
+      },
+      detailedDescriptionObj: {
+        Chinese: "",
+        English: "",
+      },
+      languageList: [{
+        label: '繁体',
+        value: 'Chinese'
+      },{
+        label: '英文',
+        value: 'English'
+      }]
     };
   },
   created() {
@@ -307,6 +349,14 @@ export default {
         groupId: null,
         deleted: null
       };
+      this.productNameObj = {
+        Chinese: "",
+        English: "",
+      };
+      this.detailedDescriptionObj = {
+        Chinese: "",
+        English: "",
+      };
       this.resetForm("form");
     },
     /** 搜索按钮操作 */
@@ -338,6 +388,8 @@ export default {
       const id = row.id || this.ids
       getSpproduct(id).then(response => {
         this.form = response.data;
+        this.productNameObj = JSON.parse(this.form.productName);
+        this.detailedDescriptionObj = JSON.parse(this.form.detailedDescription);
         this.open = true;
         this.title = "修改产品";
       });
@@ -346,6 +398,15 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          if (!this.productNameObj.Chinese) {
+            return this.$modal.msgError("请输入商品描述");
+          }
+          this.form.productName = JSON.stringify(this.productNameObj);
+
+          if (!this.detailedDescriptionObj.Chinese) {
+            return this.$modal.msgError("请输入商品描述");
+          }
+          this.form.detailedDescription = JSON.stringify(this.detailedDescriptionObj);
           if (this.form.id != null) {
             updateSpproduct(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
