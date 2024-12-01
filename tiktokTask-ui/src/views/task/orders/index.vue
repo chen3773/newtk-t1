@@ -9,10 +9,18 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="产品ID" prop="productId">
+      <el-form-item label="订单编号" prop="orderNumber">
+        <el-input
+          v-model="queryParams.orderNumber"
+          placeholder="请输入订单编号"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item label="商品ID" prop="productId">
         <el-input
           v-model="queryParams.productId"
-          placeholder="请输入产品ID"
+          placeholder="请输入商品ID"
           clearable
           @keyup.enter.native="handleQuery"
         />
@@ -90,27 +98,28 @@
 
     <el-table v-loading="loading" :data="ordersList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="订单ID" align="center" prop="orderId" />
+      <el-table-column label="订单编号" align="center" prop="orderNumber" />
       <el-table-column label="用户ID" align="center" prop="uid" />
-      <el-table-column label="产品ID" align="center" prop="productId" />
+      <el-table-column label="商品ID" align="center" prop="productId" />
       <el-table-column label="数量" align="center" prop="quantity" />
-      <el-table-column label="订单日期" align="center" prop="orderDate" width="180">
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.orderDate, '{y}-{m}-{d}') }}</span>
-        </template>
-      </el-table-column>
+      
       <el-table-column label="总价" align="center" prop="totalPrice" />
       <el-table-column label="订单状态" align="center" prop="status" />
       <el-table-column label="配送地址" align="center" prop="shippingAddress" />
       <el-table-column label="支付方式" align="center" prop="paymentMethod" />
       <el-table-column label="支付状态" align="center" prop="paymentStatus" />
       <el-table-column label="配送状态" align="center" prop="shippingStatus" />
-      <el-table-column label="创建时间" align="center" prop="createdAt" width="180">
+      <!-- <el-table-column label="创建时间" align="center" prop="createdAt">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createdAt, '{y}-{m}-{d}') }}</span>
         </template>
+      </el-table-column> -->
+      <el-table-column label="订单日期" align="center" prop="orderDate">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.orderDate, '{y}-{m}-{d}') }}</span>
+        </template>
       </el-table-column>
-      <el-table-column label="更新时间" align="center" prop="updatedAt" width="180">
+      <el-table-column label="更新时间" align="center" prop="updatedAt">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updatedAt, '{y}-{m}-{d}') }}</span>
         </template>
@@ -150,8 +159,8 @@
         <el-form-item label="用户ID" prop="uid">
           <el-input v-model="form.uid" placeholder="请输入用户ID" />
         </el-form-item>
-        <el-form-item label="产品ID" prop="productId">
-          <el-input v-model="form.productId" placeholder="请输入产品ID" />
+        <el-form-item label="商品ID" prop="productId">
+          <el-input v-model="form.productId" placeholder="请输入商品ID" />
         </el-form-item>
         <el-form-item label="数量" prop="quantity">
           <el-input v-model="form.quantity" placeholder="请输入数量" />
@@ -238,6 +247,7 @@ export default {
         status: null,
         paymentStatus: null,
         updatedAt: null,
+        orderNumber: null
       },
       // 表单参数
       form: {},
@@ -285,7 +295,8 @@ export default {
         shippingStatus: null,
         createdAt: null,
         updatedAt: null,
-        note: null
+        note: null,
+        orderNumber: null
       };
       this.resetForm("form");
     },

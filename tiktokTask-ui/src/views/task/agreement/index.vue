@@ -63,9 +63,21 @@
 
     <el-table v-loading="loading" :data="agreementList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="${comment}" align="center" prop="id" />
+      <!-- <el-table-column label="${comment}" align="center" prop="id" /> -->
       <el-table-column label="文本名称" align="center" prop="name" />
-      <el-table-column label="文本信息" align="center" prop="textMessage" />
+      <el-table-column label="文本内容" align="center" prop="textMessage">
+        <template slot-scope="scope">
+          <el-button
+            size="mini"
+            type="text"
+            @click="
+              smContent = scope.row.textMessage;
+              open1 = true;
+            "
+            >查看详情</el-button
+          >
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -97,17 +109,36 @@
     <!-- 添加或修改文本对话框 -->
     <el-dialog :close-on-click-modal="false" :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+        <el-form-item label="语言" prop="language">
+          <el-radio-group v-model="language">
+            <el-radio
+              v-for="dict in languageList"
+              :key="dict.value"
+              :label="dict.value"
+              >{{ dict.label }}</el-radio
+            >
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="文本名称" prop="name">
           <el-input v-model="form.name" placeholder="请输入文本名称" />
         </el-form-item>
         <el-form-item label="文本信息" prop="textMessage">
-          <el-input v-model="form.textMessage" type="textarea" placeholder="请输入内容" />
+          <el-input v-model="textMessageObj[language]" type="textarea" :rows="10" placeholder="请输入内容" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
+    </el-dialog>
+    <el-dialog
+      :close-on-click-modal="false"
+      title="文本内容"
+      :visible.sync="open1"
+      width="700px"
+      append-to-body
+    >
+      <div class="smContent" v-html="smContent"></div>
     </el-dialog>
   </div>
 </template>
@@ -147,7 +178,21 @@ export default {
       form: {},
       // 表单校验
       rules: {
-      }
+      },
+      smContent: "",
+      open1: false,
+      language: "Chinese",
+      textMessageObj: {
+        Chinese: "",
+        English: "",
+      },
+      languageList: [{
+        label: '繁体',
+        value: 'Chinese'
+      },{
+        label: '英文',
+        value: 'English'
+      }]
     };
   },
   created() {
@@ -174,6 +219,10 @@ export default {
         id: null,
         name: null,
         textMessage: null
+      };
+      this.textMessageObj = {
+        Chinese: "",
+        English: "",
       };
       this.resetForm("form");
     },
@@ -205,6 +254,7 @@ export default {
       const id = row.id || this.ids
       getAgreement(id).then(response => {
         this.form = response.data;
+        this.textMessageObj = JSON.parse(this.form.textMessage);
         this.open = true;
         this.title = "修改文本";
       });
@@ -213,6 +263,11 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          if (!this.textMessageObj.Chinese) {
+            return this.$modal.msgError("请输入内容");
+          }
+          this.form.textMessage = JSON.stringify(this.textMessageObj);
+
           if (this.form.id != null) {
             updateAgreement(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");

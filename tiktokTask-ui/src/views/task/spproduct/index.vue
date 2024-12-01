@@ -54,13 +54,15 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="分组id" prop="groupId">
-        <el-input
-          v-model="queryParams.groupId"
-          placeholder="请输入分组id"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
+      <el-form-item label="商品分类" prop="groupId">
+        <el-select v-model="queryParams.groupId" placeholder="请选择商品分类">
+            <el-option
+              v-for="dict in groupsList"
+              :key="dict.id"
+              :label="dict.groupName"
+              :value="parseInt(dict.id)"
+            ></el-option>
+          </el-select>
       </el-form-item>
       <el-form-item label="语言" prop="language">
         <el-select
@@ -131,6 +133,7 @@
     <el-table v-loading="loading" :data="spproductList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <!-- <el-table-column label="" align="center" prop="id" /> -->
+      <el-table-column label="商品分类" align="center" prop="groupName" />
       <el-table-column label="名称" align="center" prop="productName" />
       <el-table-column label="价格" align="center" prop="productPrice" />
       <el-table-column label="库存" align="center" prop="productInventory" />
@@ -151,7 +154,7 @@
           <dict-tag :options="dict.type.on_off" :value="scope.row.status"/>
         </template>
       </el-table-column>
-      <el-table-column label="分组id" align="center" prop="groupId" />
+      
       <!-- <el-table-column label="" align="center" prop="deleted" /> -->
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
@@ -194,10 +197,19 @@
             >
           </el-radio-group>
         </el-form-item>
+        <el-form-item label="商品分类" prop="groupId">
+          <el-select v-model="form.groupId" placeholder="请选择商品分类">
+            <el-option
+              v-for="dict in groupsList"
+              :key="dict.id"
+              :label="dict.groupName"
+              :value="parseInt(dict.id)"
+            ></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="名称" prop="productName">
           <el-input v-model="productNameObj[language]" placeholder="请输入名称" />
         </el-form-item>
-        
         <el-form-item label="价格" prop="productPrice">
           <el-input v-model="form.productPrice" placeholder="请输入价格" />
         </el-form-item>
@@ -225,9 +237,7 @@
             >{{dict.label}}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="分组id" prop="groupId">
-          <el-input v-model="form.groupId" placeholder="请输入分组id" />
-        </el-form-item>
+        
         <!-- <el-form-item label="" prop="deleted">
           <el-input v-model="form.deleted" placeholder="请输入" />
         </el-form-item> -->
@@ -242,6 +252,7 @@
 
 <script>
 import { listSpproduct, getSpproduct, delSpproduct, addSpproduct, updateSpproduct } from "@/api/task/spproduct";
+import { listGroups } from "@/api/task/groups";
 
 export default {
   name: "Spproduct",
@@ -304,13 +315,26 @@ export default {
       },{
         label: '英文',
         value: 'English'
-      }]
+      }],
+      groupsList: []
     };
   },
   created() {
+    this.getListGroups();
+    this.getList();
+  },
+  activated() {
     this.getList();
   },
   methods: {
+    getListGroups() {
+      listGroups({
+        pageNum: 1,
+        pageSize: 20,
+      }).then(response => {
+        this.groupsList = response.rows;
+      });
+    },
     /** 查询产品列表 */
     getList() {
       this.loading = true;
