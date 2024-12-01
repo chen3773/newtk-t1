@@ -73,7 +73,7 @@
 
     <el-table v-loading="loading" :data="groupsList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <!-- <el-table-column label="ID" align="center" prop="id" /> -->
+      <el-table-column label="ID" align="center" prop="id" />
       <el-table-column label="商品分类" align="center" prop="groupName" />
       <el-table-column label="状态" align="center" prop="status">
         <template slot-scope="scope">
@@ -111,8 +111,18 @@
     <!-- 添加或修改商品分类对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+        <el-form-item label="语言" prop="language">
+          <el-radio-group v-model="language">
+            <el-radio
+              v-for="dict in languageList"
+              :key="dict.value"
+              :label="dict.value"
+              >{{ dict.label }}</el-radio
+            >
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="商品分类" prop="groupName">
-          <el-input v-model="form.groupName" placeholder="请输入商品分类" />
+          <el-input v-model="groupNameObj[language]" placeholder="请输入商品分类" />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
@@ -169,7 +179,19 @@ export default {
       form: {},
       // 表单校验
       rules: {
-      }
+      },
+      language: "Chinese",
+      groupNameObj: {
+        Chinese: "",
+        English: "",
+      },
+      languageList: [{
+        label: '繁体',
+        value: 'Chinese'
+      },{
+        label: '英文',
+        value: 'English'
+      }]
     };
   },
   created() {
@@ -197,6 +219,10 @@ export default {
         groupName: null,
         createTime: null,
         status: null
+      };
+      this.groupNameObj = {
+        Chinese: "",
+        English: "",
       };
       this.resetForm("form");
     },
@@ -228,6 +254,7 @@ export default {
       const id = row.id || this.ids
       getGroups(id).then(response => {
         this.form = response.data;
+        this.groupNameObj = JSON.parse(this.form.groupName);
         this.open = true;
         this.title = "修改商品分类";
       });
@@ -236,6 +263,11 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          if (!this.groupNameObj.Chinese) {
+            return this.$modal.msgError("请输入商品分类");
+          }
+          this.form.groupName = JSON.stringify(this.groupNameObj);
+
           if (this.form.id != null) {
             updateGroups(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");

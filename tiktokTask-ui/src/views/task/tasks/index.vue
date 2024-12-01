@@ -198,17 +198,27 @@
     <!-- 添加或修改任务列对话框 -->
     <el-dialog :close-on-click-modal="false" :title="title" :visible.sync="open" width="700px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+        <el-form-item label="语言" prop="language">
+          <el-radio-group v-model="language">
+            <el-radio
+              v-for="dict in languageList"
+              :key="dict.value"
+              :label="dict.value"
+              >{{ dict.label }}</el-radio
+            >
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="任务标题" prop="title">
-          <el-input v-model="form.title" placeholder="请输入任务标题" />
+          <el-input v-model="titleObj[language]" placeholder="请输入任务标题" />
         </el-form-item>
         <el-form-item label="任务图片链接" prop="image">
           <image-upload v-model="form.image"/>
         </el-form-item>
         <el-form-item label="任务描述" prop="description">
-          <el-input v-model="form.description" type="textarea" placeholder="请输入内容" />
+          <el-input v-model="descriptionObj[language]" placeholder="请输入任务描述内容" />
         </el-form-item>
         <el-form-item label="任务的详细描述" prop="detailedDescription">
-          <el-input v-model="form.detailedDescription" type="textarea" placeholder="请输入内容" />
+          <el-input v-model="detailedDescriptionObj[language]" type="textarea" placeholder="请输入任务的详细描述" />
         </el-form-item>
         <el-form-item label="奖励金额" prop="rewardAmount">
           <el-input v-model="form.rewardAmount" placeholder="请输入奖励金额" />
@@ -320,23 +330,44 @@ export default {
         completedQuantity: null,
         taskLevel: null,
         createdAt: null,
-        state: null
+        state: null,
+        language: "Chinese"
       },
       // 表单参数
       form: {},
       // 表单校验
       rules: {
-        title: [
-          { required: true, message: "任务标题不能为空", trigger: "blur" }
-        ],
-        totalQuantity: [
-          { required: true, message: "任务总数量不能为空", trigger: "blur" }
-        ],
+        // title: [
+        //   { required: true, message: "任务标题不能为空", trigger: "blur" }
+        // ],
+        // totalQuantity: [
+        //   { required: true, message: "任务总数量不能为空", trigger: "blur" }
+        // ],
       },
       smContent: "",
       open1: false,
       form2: {},
       open2: false,
+      language: "Chinese",
+      titleObj: {
+        Chinese: "",
+        English: "",
+      },
+      descriptionObj: {
+        Chinese: "",
+        English: "",
+      },
+      detailedDescriptionObj: {
+        Chinese: "",
+        English: "",
+      },
+      languageList: [{
+        label: '繁体',
+        value: 'Chinese'
+      },{
+        label: '英文',
+        value: 'English'
+      }]
     };
   },
   created() {
@@ -374,6 +405,18 @@ export default {
         createdAt: null,
         state: null
       };
+      this.titleObj = {
+        Chinese: "",
+        English: "",
+      };
+      this.descriptionObj = {
+        Chinese: "",
+        English: "",
+      };
+      this.detailedDescriptionObj = {
+        Chinese: "",
+        English: "",
+      };
       this.resetForm("form");
     },
     /** 搜索按钮操作 */
@@ -404,6 +447,9 @@ export default {
       const id = row.id || this.ids
       getTasks(id).then(response => {
         this.form = response.data;
+        this.titleObj = JSON.parse(this.form.title);
+        this.descriptionObj = JSON.parse(this.form.description);
+        this.detailedDescriptionObj = JSON.parse(this.form.detailedDescription);
         this.open = true;
         this.title = "修改任务列";
       });
@@ -418,6 +464,20 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          if (!this.titleObj.Chinese) {
+            return this.$modal.msgError("请输入任务标题");
+          }
+          this.form.title = JSON.stringify(this.titleObj);
+
+          if (!this.descriptionObj.Chinese) {
+            return this.$modal.msgError("请输入任务描述内容");
+          }
+          this.form.description = JSON.stringify(this.descriptionObj);
+
+          if (!this.detailedDescriptionObj.Chinese) {
+            return this.$modal.msgError("请输入任务的详细描述");
+          }
+          this.form.detailedDescription = JSON.stringify(this.detailedDescriptionObj);
           if (this.form.id != null) {
             updateTasks(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
