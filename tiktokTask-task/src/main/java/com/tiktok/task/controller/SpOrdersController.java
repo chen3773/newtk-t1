@@ -1,9 +1,14 @@
 package com.tiktok.task.controller;
 
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
+
+import com.tiktok.common.utils.StringUtils;
+import com.tiktok.task.domain.ov.OrderProductOV;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -25,7 +30,7 @@ import com.tiktok.common.core.page.TableDataInfo;
  * 订单信息Controller
  * 
  * @author ruoyi
- * @date 2024-11-26
+ * @date 2024-11-27
  */
 @RestController
 @RequestMapping("/task/orders")
@@ -100,5 +105,29 @@ public class SpOrdersController extends BaseController
     public AjaxResult remove(@PathVariable Long[] orderIds)
     {
         return toAjax(spOrdersService.deleteSpOrdersByOrderIds(orderIds));
+    }
+
+    /**
+     * 下单
+     */
+    @PostMapping("/Buy")
+    public AjaxResult Buy(@RequestBody  Map<String, Object> requestData){
+        return spOrdersService.Buy(requestData);
+    }
+
+    /**
+     * 按状态获取订单类别
+     */
+    @GetMapping("/orderList")
+    public TableDataInfo orderList(String StateId,String orderId){
+        startPage();
+        List<OrderProductOV> orderProductOVS = spOrdersService.orderList(StateId,orderId);
+        return getDataTable(orderProductOVS);
+    }
+
+    @GetMapping("/OrderStatus")
+    public AjaxResult OrderStatus(){
+        List<Map<String, Object>> objects =  spOrdersService.OrderStatus();
+        return AjaxResult.success(objects);
     }
 }

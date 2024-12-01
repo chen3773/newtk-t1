@@ -2,6 +2,8 @@ package com.tiktok.task.mapper;
 
 import java.util.List;
 import com.tiktok.task.domain.TkUsers;
+import com.tiktok.task.domain.ov.OrderProductOV;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 用户信息Mapper接口
@@ -62,4 +64,5 @@ public interface TkUsersMapper
     List<TkUsers> selectSubordinates(Long userId);
 
     public List<TkUsers> selectTkUsersBlurList(TkUsers tkUsers);
+
 }

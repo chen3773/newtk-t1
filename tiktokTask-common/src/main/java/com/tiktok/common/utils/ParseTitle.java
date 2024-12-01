@@ -1,4 +1,4 @@
-package com.tiktok.task.util;
+package com.tiktok.common.utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -6,7 +6,7 @@ import org.json.JSONObject;
 import java.lang.reflect.Field;
 
 
-public class parseTitle {
+public class ParseTitle {
     public static String[] parseText(String jsonString) {
         try {
             JSONObject jsonObject = new JSONObject(jsonString);

@@ -1,13 +1,17 @@
 package com.tiktok.task.mapper;
 
 import java.util.List;
+import java.util.Map;
+
 import com.tiktok.task.domain.SpOrders;
+import com.tiktok.task.domain.ov.OrderProductOV;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 订单信息Mapper接口
  * 
  * @author ruoyi
- * @date 2024-11-26
+ * @date 2024-11-27
  */
 public interface SpOrdersMapper 
 {
@@ -58,4 +62,10 @@ public interface SpOrdersMapper
      * @return 结果
      */
     public int deleteSpOrdersByOrderIds(Long[] orderIds);
+    public List<OrderProductOV> getOrdersAndProductDetails(@Param("uid") Long uid,
+                                                           @Param("status") String status,
+                                                           @Param("orderId") String orderId);
+
+    public List<Map<String, Object>> countOrdersByStatus(@Param("uid") Long uid);
+
 }

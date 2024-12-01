@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import static com.tiktok.common.utils.PageUtils.startPage;
-import static com.tiktok.task.util.parseTitle.iterateObjectFields;
+import static com.tiktok.common.utils.ParseTitle.iterateObjectFields;
 
 /**
  * 任务列Service业务层处理
@@ -71,12 +71,13 @@ public class TkTasksServiceImpl implements ITkTasksService
     {
         Long uid = SecurityUtils.getLoginUser().getUser().getUid();
         List<TkTasks> tkTasksList = tkTasksMapper.selectTkTasksList(tkTasks);
+        String language  = "English";
         if (uid != null) {
             // 从Redis中获取用户的语言设置
-            String language =(String) redisCache.getCacheObject("user:language:" + uid);
+             language =(String) redisCache.getCacheObject("user:language:" + uid);
         }
         for (int i = 0; i < tkTasksList.size(); i++) {
-            tkTasksList.set(i,(TkTasks) iterateObjectFields(tkTasksList.get(i),"English"));
+            tkTasksList.set(i,(TkTasks) iterateObjectFields(tkTasksList.get(i),language));
         }
         return tkTasksList;
     }

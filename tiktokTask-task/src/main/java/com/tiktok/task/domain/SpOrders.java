@@ -12,7 +12,7 @@ import com.tiktok.common.core.domain.BaseEntity;
  * 订单信息对象 sp_orders
  * 
  * @author ruoyi
- * @date 2024-11-26
+ * @date 2024-11-27
  */
 public class SpOrders extends BaseEntity
 {
@@ -75,6 +75,14 @@ public class SpOrders extends BaseEntity
     /** 备注 */
     @Excel(name = "备注")
     private String note;
+
+    /** 订单号 */
+    @Excel(name = "订单号")
+    private String orderNumber;
+
+    /** 快递单号 */
+    @Excel(name = "快递单号")
+    private String trackingNumber;
 
     public void setOrderId(Long orderId) 
     {
@@ -202,6 +210,24 @@ public class SpOrders extends BaseEntity
     {
         return note;
     }
+    public void setOrderNumber(String orderNumber) 
+    {
+        this.orderNumber = orderNumber;
+    }
+
+    public String getOrderNumber() 
+    {
+        return orderNumber;
+    }
+    public void setTrackingNumber(String trackingNumber) 
+    {
+        this.trackingNumber = trackingNumber;
+    }
+
+    public String getTrackingNumber() 
+    {
+        return trackingNumber;
+    }
 
     @Override
     public String toString() {
@@ -220,6 +246,8 @@ public class SpOrders extends BaseEntity
             .append("createdAt", getCreatedAt())
             .append("updatedAt", getUpdatedAt())
             .append("note", getNote())
+            .append("orderNumber", getOrderNumber())
+            .append("trackingNumber", getTrackingNumber())
             .toString();
     }
 }

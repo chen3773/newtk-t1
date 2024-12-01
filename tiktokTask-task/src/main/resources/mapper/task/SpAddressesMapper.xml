@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tiktok.task.mapper.SpAddressesMapper">
+    
+    <resultMap type="SpAddresses" id="SpAddressesResult">
+        <result property="addressId"    column="address_id"    />
+        <result property="uid"    column="uid"    />
+        <result property="fullName"    column="full_name"    />
+        <result property="streetAddress1"    column="street_address1"    />
+        <result property="streetAddress2"    column="street_address2"    />
+        <result property="city"    column="city"    />
+        <result property="state"    column="state"    />
+        <result property="postalCode"    column="postal_code"    />
+        <result property="country"    column="country"    />
+        <result property="phoneNumber"    column="phone_number"    />
+        <result property="email"    column="email"    />
+        <result property="defaultAddress"    column="default_address"    />
+    </resultMap>
+
+    <sql id="selectSpAddressesVo">
+        select address_id, uid, full_name, street_address1, street_address2, city, state, postal_code, country, phone_number, email, default_address from sp_addresses
+    </sql>
+
+    <select id="selectSpAddressesList" parameterType="SpAddresses" resultMap="SpAddressesResult">
+        <include refid="selectSpAddressesVo"/>
+        <where>  
+            <if test="addressId != null "> and address_id = #{addressId}</if>
+            <if test="country != null  and country != ''"> and country = #{country}</if>
+        </where>
+    </select>
+    
+    <select id="selectSpAddressesByAddressId" parameterType="Long" resultMap="SpAddressesResult">
+        <include refid="selectSpAddressesVo"/>
+        where address_id = #{addressId}
+    </select>
+
+    <insert id="insertSpAddresses" parameterType="SpAddresses">
+        insert into sp_addresses
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="addressId != null">address_id,</if>
+            <if test="uid != null">uid,</if>
+            <if test="fullName != null">full_name,</if>
+            <if test="streetAddress1 != null">street_address1,</if>
+            <if test="streetAddress2 != null">street_address2,</if>
+            <if test="city != null">city,</if>
+            <if test="state != null">state,</if>
+            <if test="postalCode != null">postal_code,</if>
+            <if test="country != null">country,</if>
+            <if test="phoneNumber != null">phone_number,</if>
+            <if test="email != null">email,</if>
+            <if test="defaultAddress != null">default_address,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="addressId != null">#{addressId},</if>
+            <if test="uid != null">#{uid},</if>
+            <if test="fullName != null">#{fullName},</if>
+            <if test="streetAddress1 != null">#{streetAddress1},</if>
+            <if test="streetAddress2 != null">#{streetAddress2},</if>
+            <if test="city != null">#{city},</if>
+            <if test="state != null">#{state},</if>
+            <if test="postalCode != null">#{postalCode},</if>
+            <if test="country != null">#{country},</if>
+            <if test="phoneNumber != null">#{phoneNumber},</if>
+            <if test="email != null">#{email},</if>
+            <if test="defaultAddress != null">#{defaultAddress},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSpAddresses" parameterType="SpAddresses">
+        update sp_addresses
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="uid != null">uid = #{uid},</if>
+            <if test="fullName != null">full_name = #{fullName},</if>
+            <if test="streetAddress1 != null">street_address1 = #{streetAddress1},</if>
+            <if test="streetAddress2 != null">street_address2 = #{streetAddress2},</if>
+            <if test="city != null">city = #{city},</if>
+            <if test="state != null">state = #{state},</if>
+            <if test="postalCode != null">postal_code = #{postalCode},</if>
+            <if test="country != null">country = #{country},</if>
+            <if test="phoneNumber != null">phone_number = #{phoneNumber},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="defaultAddress != null">default_address = #{defaultAddress},</if>
+        </trim>
+        where address_id = #{addressId}
+    </update>
+
+    <delete id="deleteSpAddressesByAddressId" parameterType="Long">
+        delete from sp_addresses where address_id = #{addressId}
+    </delete>
+
+    <delete id="deleteSpAddressesByAddressIds" parameterType="String">
+        delete from sp_addresses where address_id in 
+        <foreach item="addressId" collection="array" open="(" separator="," close=")">
+            #{addressId}
+        </foreach>
+    </delete>
+</mapper>

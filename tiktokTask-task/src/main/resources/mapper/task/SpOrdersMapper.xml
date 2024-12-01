@@ -19,10 +19,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="createdAt"    column="created_at"    />
         <result property="updatedAt"    column="updated_at"    />
         <result property="note"    column="note"    />
+        <result property="orderNumber"    column="order_number"    />
+        <result property="trackingNumber"    column="tracking_number"    />
+    </resultMap>
+
+    <resultMap id="OrderProductOVResultMap" type="com.tiktok.task.domain.ov.OrderProductOV">
+        <association property="order" resultMap="com.tiktok.task.mapper.SpOrdersMapper.SpOrdersResult"/>
+        <association property="product" resultMap="com.tiktok.task.mapper.SpProductMapper.SpProductResult"/>
     </resultMap>
 
     <sql id="selectSpOrdersVo">
-        select order_id, uid, product_id, quantity, order_date, total_price, status, shipping_address, payment_method, payment_status, shipping_status, created_at, updated_at, note from sp_orders
+        select order_id, uid, product_id, quantity, order_date, total_price, status, shipping_address, payment_method, payment_status, shipping_status, created_at, updated_at, note, order_number, tracking_number from sp_orders
     </sql>
 
     <select id="selectSpOrdersList" parameterType="SpOrders" resultMap="SpOrdersResult">
@@ -30,10 +37,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <where>  
             <if test="uid != null "> and uid = #{uid}</if>
             <if test="productId != null "> and product_id = #{productId}</if>
+            <if test="quantity != null "> and quantity = #{quantity}</if>
             <if test="params.beginOrderDate != null and params.beginOrderDate != '' and params.endOrderDate != null and params.endOrderDate != ''"> and order_date between #{params.beginOrderDate} and #{params.endOrderDate}</if>
+            <if test="totalPrice != null "> and total_price = #{totalPrice}</if>
             <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="shippingAddress != null  and shippingAddress != ''"> and shipping_address = #{shippingAddress}</if>
+            <if test="paymentMethod != null  and paymentMethod != ''"> and payment_method = #{paymentMethod}</if>
             <if test="paymentStatus != null  and paymentStatus != ''"> and payment_status = #{paymentStatus}</if>
+            <if test="shippingStatus != null  and shippingStatus != ''"> and shipping_status = #{shippingStatus}</if>
+            <if test="createdAt != null "> and created_at = #{createdAt}</if>
             <if test="updatedAt != null "> and updated_at = #{updatedAt}</if>
+            <if test="note != null  and note != ''"> and note = #{note}</if>
+            <if test="orderNumber != null  and orderNumber != ''"> and order_number = #{orderNumber}</if>
+            <if test="trackingNumber != null  and trackingNumber != ''"> and tracking_number = #{trackingNumber}</if>
         </where>
     </select>
     
@@ -59,6 +75,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="createdAt != null">created_at,</if>
             <if test="updatedAt != null">updated_at,</if>
             <if test="note != null">note,</if>
+            <if test="orderNumber != null">order_number,</if>
+            <if test="trackingNumber != null">tracking_number,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="orderId != null">#{orderId},</if>
@@ -75,6 +93,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="createdAt != null">#{createdAt},</if>
             <if test="updatedAt != null">#{updatedAt},</if>
             <if test="note != null">#{note},</if>
+            <if test="orderNumber != null">#{orderNumber},</if>
+            <if test="trackingNumber != null">#{trackingNumber},</if>
          </trim>
     </insert>
 
@@ -94,6 +114,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="createdAt != null">created_at = #{createdAt},</if>
             <if test="updatedAt != null">updated_at = #{updatedAt},</if>
             <if test="note != null">note = #{note},</if>
+            <if test="orderNumber != null">order_number = #{orderNumber},</if>
+            <if test="trackingNumber != null">tracking_number = #{trackingNumber},</if>
         </trim>
         where order_id = #{orderId}
     </update>
@@ -108,4 +130,36 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{orderId}
         </foreach>
     </delete>
+
+
+    <select id="getOrdersAndProductDetails" resultMap="OrderProductOVResultMap">
+        SELECT
+            o.*,
+            p.*
+        FROM
+            sp_orders o
+                JOIN
+            sp_product p ON o.product_id = p.id
+        WHERE
+            o.uid = #{uid}
+
+        <if test="status != null and status != ''" >  AND o.status = #{status}</if>
+        <if test="orderId != null and orderId != ''" >AND o.order_id = #{orderId}</if>
+        ORDER BY
+            o.created_at DESC
+    </select>
+    <select id="countOrdersByStatus" resultType="map">
+        SELECT
+            SUM(CASE WHEN `status` = 1 THEN 1 ELSE 0 END) AS status1_count,
+            SUM(CASE WHEN `status` = 2 THEN 1 ELSE 0 END) AS status2_count,
+            SUM(CASE WHEN `status` = 3 THEN 1 ELSE 0 END) AS status3_count,
+            COUNT(*) AS total_count
+        FROM
+            `sp_orders`
+        WHERE
+            `uid` = #{uid};
+
+    </select>
+
+
 </mapper>

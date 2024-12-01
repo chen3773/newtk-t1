@@ -1,13 +1,19 @@
 package com.tiktok.task.service;
 
 import java.util.List;
+import java.util.Map;
+
+import com.tiktok.common.core.domain.AjaxResult;
+import com.tiktok.common.core.page.TableDataInfo;
 import com.tiktok.task.domain.SpOrders;
+import com.tiktok.task.domain.ov.OrderProductOV;
+import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * 订单信息Service接口
  * 
  * @author ruoyi
- * @date 2024-11-26
+ * @date 2024-11-27
  */
 public interface ISpOrdersService 
 {
@@ -58,4 +64,10 @@ public interface ISpOrdersService
      * @return 结果
      */
     public int deleteSpOrdersByOrderId(Long orderId);
+
+    public AjaxResult Buy(Map<String, Object> requestData);
+
+    List<OrderProductOV>  orderList(String stateId,String orderId);
+
+    List<Map<String, Object>> OrderStatus();
 }

@@ -1,8 +1,13 @@
 package com.tiktok.framework.web.exception;
 
 import javax.servlet.http.HttpServletRequest;
+
+import com.tiktok.common.core.redis.RedisCache;
+import com.tiktok.common.utils.ParseTitle;
+import com.tiktok.common.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -28,6 +33,8 @@ import com.tiktok.common.utils.html.EscapeUtil;
 public class GlobalExceptionHandler
 {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    @Autowired
+    private RedisCache redisCache;
 
     /**
      * 权限校验异常
@@ -148,6 +155,42 @@ public class GlobalExceptionHandler
         String message = e.getAllErrors().get(0).getDefaultMessage();
         return AjaxResult.error(message);
     }
+
+    /**
+     * 自定义验证异常
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public AjaxResult handleBindException(IllegalArgumentException  e)
+    {
+        String message = e.getMessage();
+        Long uid = null;
+
+        try {
+             uid = SecurityUtils.getLoginUser().getUser().getUid();
+        }catch (Exception ee){
+            uid = null;
+        }
+        String language = "English";
+        if (uid != null) {
+            // 从Redis中获取用户的语言设置
+          String l =   (String) redisCache.getCacheObject("user:language:" + uid);;
+            if(l!=null){
+                language = l;
+            }
+
+        }
+        String[] strings = ParseTitle.parseText(message);
+        if (strings != null && strings.length >= 2 && strings[0] != null && strings[1] != null) {
+                if(language.equals("Chinese")){
+                    message =   strings[0];
+                }else if(language.equals("English")){
+                    message =  strings[1];
+                }
+
+        }
+        return AjaxResult.error(message);
+    }
+
 
     /**
      * 自定义验证异常
