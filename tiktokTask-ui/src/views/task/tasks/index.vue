@@ -78,6 +78,7 @@
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" size="mini" @click="changeLange">切换语言</el-button>
       </el-form-item>
     </el-form>
 
@@ -291,6 +292,7 @@
 
 <script>
 import { listTasks, getTasks, delTasks, addTasks, updateTasks, BatchChanges } from "@/api/task/tasks";
+import { LanguageSetting } from "@/api/index";
 
 export default {
   name: "Tasks",
@@ -374,6 +376,15 @@ export default {
     this.getList();
   },
   methods: {
+    changeLange() {
+      let language = localStorage.getItem('Language') == 'English' ? 'Chinese' : 'English';
+      LanguageSetting({
+        Language: language
+      }).then(response => {
+        localStorage.setItem('Language', language)
+        this.getList();
+      });
+    },
     /** 查询任务列列表 */
     getList() {
       this.loading = true;
