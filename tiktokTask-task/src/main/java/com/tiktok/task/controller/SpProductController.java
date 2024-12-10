@@ -2,6 +2,10 @@ package com.tiktok.task.controller;
 
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+
+import com.tiktok.common.core.redis.RedisCache;
+import com.tiktok.common.utils.SecurityUtils;
+import com.tiktok.task.util.LanguageUtil;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +37,8 @@ public class SpProductController extends BaseController
 {
     @Autowired
     private ISpProductService spProductService;
+    @Autowired
+    private RedisCache redisCache;
 
     /**
      * 查询产品列表
@@ -88,7 +94,10 @@ public class SpProductController extends BaseController
     @GetMapping("/getProductInfo")
     public AjaxResult getProductInfo(Long id)
     {
-        return success(spProductService.selectSpProductById(id));
+
+        Long uid = SecurityUtils.getLoginUser().getUser().getUid();
+        SpProduct spProduct = spProductService.selectSpProductById(id);
+        return success((SpProduct) LanguageUtil.processObjectWithLanguageSetting(uid,spProduct,redisCache));
     }
 
     /**

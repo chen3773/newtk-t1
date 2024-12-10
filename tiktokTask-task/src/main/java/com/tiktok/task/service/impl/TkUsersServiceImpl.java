@@ -369,10 +369,11 @@ public class TkUsersServiceImpl implements ITkUsersService
         Long uid = SecurityUtils.getLoginUser().getUser().getUid();
         TkUsers tkUser = tkUsersMapper.selectTkUsersByUid(uid);
 
-        if(tkUser.getPaymentPassword()!=null && tkUsers.getUsdtAddress()==null){
-            AssertionUtils.isTrue(tkUser.getPaymentPassword().equals(tkUsers.getOldPasswords()),"The old password doesn't match");
-
+        if (tkUser.getPaymentPassword() != null && tkUsers.getUsdtAddress() == null) {
+            AssertionUtils.isTrue(tkUser.getPaymentPassword().equals(tkUsers.getOldPasswords()),
+                    "{ \"Chinese\": \"舊密碼不匹配\", \"English\": \"The old password doesn't match\" }");
         }
+
         TkUsers tkUsers1 = new TkUsers();
         tkUsers1.setUid(uid);
         tkUsers1.setNickname(tkUsers.getNickname());
@@ -380,53 +381,69 @@ public class TkUsersServiceImpl implements ITkUsersService
         tkUsers1.setAvatar(tkUsers.getAvatar());
         tkUsers1.setUsdtAddress(tkUsers.getUsdtAddress());
         tkUsers1.setBlockchainName(tkUsers.getBlockchainName());
+
         int i = tkUsersMapper.updateTkUsers(tkUsers1);
-        Assert.isTrue(i!=0,"error");
+        Assert.isTrue(i != 0,
+                "{ \"Chinese\": \"錯誤\", \"English\": \"Error\" }");
+
         return AjaxResult.success("Successful");
     }
 
 
+
     @Override
     @Transactional
-    public AjaxResult withdraw(String amount,String paymentPassword,String type) {
+    public AjaxResult withdraw(String amount, String paymentPassword, String type) {
         Long uid = SecurityUtils.getLoginUser().getUser().getUid();
         TkUsers tkUsers = tkUsersMapper.selectTkUsersByUid(uid);
 
-
-        Assert.isTrue(tkUsers.getPaymentPassword()!=null,"Set a payment password.");
-        Assert.isTrue(tkUsers.getPaymentPassword().trim().equals(paymentPassword.trim()),"Payment password error");
+        Assert.isTrue(tkUsers.getPaymentPassword() != null,
+                "{ \"Chinese\": \"請設置支付密碼。\", \"English\": \"Set a payment password.\" }");
+        Assert.isTrue(tkUsers.getPaymentPassword().trim().equals(paymentPassword.trim()),
+                "{ \"Chinese\": \"支付密碼錯誤\", \"English\": \"Payment password error\" }");
 
         // 计算提现后的余额
         BigDecimal newBalance = new BigDecimal(0);
-        if(type.equals("0")){
+        if (type.equals("0")) {
 
-            //判断是否有未完成任务
+            // 判断是否有未完成任务
             TkTaskAcceptances tkTaskAcceptances = new TkTaskAcceptances();
             tkTaskAcceptances.setUid(uid);
             List<TkTaskAcceptances> tkTaskAcceptances1 = tkTaskAcceptancesMapper.selectTkTaskAcceptancesList(tkTaskAcceptances);
             for (int i = 0; i < tkTaskAcceptances1.size(); i++) {
-                Assert.isTrue(!tkTaskAcceptances1.get(i).getStatus().equals("0"),"Mission not completed");
-                Assert.isTrue(!tkTaskAcceptances1.get(i).getStatus().equals("1"),"Mission not completed");
-                Assert.isTrue(!tkTaskAcceptances1.get(i).getStatus().equals("4"),"Mission not completed");
+                Assert.isTrue(!tkTaskAcceptances1.get(i).getStatus().equals("0"),
+                        "{ \"Chinese\": \"任務未完成\", \"English\": \"Mission not completed\" }");
+                Assert.isTrue(!tkTaskAcceptances1.get(i).getStatus().equals("1"),
+                        "{ \"Chinese\": \"任務未完成\", \"English\": \"Mission not completed\" }");
+                Assert.isTrue(!tkTaskAcceptances1.get(i).getStatus().equals("4"),
+                        "{ \"Chinese\": \"任務未完成\", \"English\": \"Mission not completed\" }");
             }
 
-            //获取出额度
+            // 获取出额度
             TkTasknum tkTasknum = new TkTasknum();
             tkTasknum.setUserId(uid);
             List<TkTasknum> tkTasknums = tkTasknumMapper.selectTkTasknumList(tkTasknum);
-            AssertionUtils.isTrue(tkTasknums.size()!=0,"Contact Customer Service");
-            Assert.isTrue(tkTasknums.get(0).getExperienceTaskCount()==0,"Mission not completed");
-            Assert.isTrue(tkTasknums.get(0).getNormalTaskCount()==0,"Mission not completed");
+            AssertionUtils.isTrue(tkTasknums.size() != 0,
+                    "{ \"Chinese\": \"聯繫客服\", \"English\": \"Contact Customer Service\" }");
+            Assert.isTrue(tkTasknums.get(0).getExperienceTaskCount() == 0,
+                    "{ \"Chinese\": \"任務未完成\", \"English\": \"Mission not completed\" }");
+            Assert.isTrue(tkTasknums.get(0).getNormalTaskCount() == 0,
+                    "{ \"Chinese\": \"任務未完成\", \"English\": \"Mission not completed\" }");
+
             // 将字符串转换为 double
             double value = Double.parseDouble(amount);
-            Assert.isTrue(value>0,"error");
+            Assert.isTrue(value > 0,
+                    "{ \"Chinese\": \"錯誤\", \"English\": \"Error\" }");
 
             TkUserDefault tkUserDefault = tkUserDefaultMapper.selectTkUserDefaultById(1L);
-            Assert.isTrue(Double.parseDouble(tkUserDefault.getMinimumWithdrawalAmount())<=value,"Minimum withdrawal ："+ tkUserDefault.getMinimumWithdrawalAmount());
+            Assert.isTrue(Double.parseDouble(tkUserDefault.getMinimumWithdrawalAmount()) <= value,
+                    "{ \"Chinese\": \"最低提款額：\" + tkUserDefault.getMinimumWithdrawalAmount(), \"English\": \"Minimum withdrawal: \" + tkUserDefault.getMinimumWithdrawalAmount() }");
 
-            Assert.isTrue(tkUsers.getUsdtAddress()!=null,"Set the withdrawal address.");
+            Assert.isTrue(tkUsers.getUsdtAddress() != null,
+                    "{ \"Chinese\": \"請設置提款地址。\", \"English\": \"Set the withdrawal address.\" }");
 
-            Assert.isTrue(tkUsers.getWithdraw().equals("0"),"Withdrawal exception, contact customer service");
+            Assert.isTrue(tkUsers.getWithdraw().equals("0"),
+                    "{ \"Chinese\": \"提款異常，聯繫客服\", \"English\": \"Withdrawal exception, contact customer service\" }");
 
             // 获取余额和不可提现金额
             String balanceStr = tkUsers.getBalance(); // 余额
@@ -439,14 +456,15 @@ public class TkUsersServiceImpl implements ITkUsersService
             // 将 amount 转换为 BigDecimal
             BigDecimal amountToWithdraw = new BigDecimal(amount);
             // 检查余额是否足够
-            Assert.isTrue(withdrawableBalance.compareTo(amountToWithdraw) >= 0,"Insufficient funds");
+            Assert.isTrue(withdrawableBalance.compareTo(amountToWithdraw) >= 0,
+                    "{ \"Chinese\": \"資金不足\", \"English\": \"Insufficient funds\" }");
 
             // 计算提现后的余额
-             newBalance = balance.subtract(amountToWithdraw);
+            newBalance = balance.subtract(amountToWithdraw);
 
             // 更新用户余额
             tkUsers.setBalance(newBalance.toString());
-        }else if(type.equals("1")){
+        } else if (type.equals("1")) {
             // 获取余额和不可提现金额
             String balanceStr = tkUsers.getInvestmentAmount(); // 余额
             String nonWithdrawableBalanceStr = tkUsers.getFrozenIvestmentAmount(); // 不可提现金额
@@ -458,16 +476,15 @@ public class TkUsersServiceImpl implements ITkUsersService
             // 将 amount 转换为 BigDecimal
             BigDecimal amountToWithdraw = new BigDecimal(amount);
             // 检查余额是否足够
-            Assert.isTrue(withdrawableBalance.compareTo(amountToWithdraw) >= 0,"Insufficient funds");
+            Assert.isTrue(withdrawableBalance.compareTo(amountToWithdraw) >= 0,
+                    "{ \"Chinese\": \"資金不足\", \"English\": \"Insufficient funds\" }");
 
             // 计算提现后的余额
             newBalance = balance.subtract(amountToWithdraw);
 
             // 更新用户余额
             tkUsers.setInvestmentAmount(newBalance.toString());
-
         }
-
 
         tkUsersMapper.updateTkUsers(tkUsers);
 
@@ -481,7 +498,8 @@ public class TkUsersServiceImpl implements ITkUsersService
         tkWithdrawals.setWithdrawalTime(new Date());
         tkWithdrawals.setStatus(0L);
         tkWithdrawalsMapper.insertTkWithdrawals(tkWithdrawals);
-        //钱包记录
+
+        // 钱包记录
         TkWallettransactions tkWallettransactions = new TkWallettransactions();
         tkWallettransactions.setAmount(new BigDecimal(amount).negate());
         tkWallettransactions.setUserid(uid);
@@ -490,12 +508,13 @@ public class TkUsersServiceImpl implements ITkUsersService
         tkWallettransactions.setFundBalance(newBalance);
         tkWallettransactions.setCategory("withdraw");
         tkWallettransactions.setTransactionStatus("待处理");
-        tkWallettransactions.setDescription("withdraw："+new BigDecimal(amount));
+        tkWallettransactions.setDescription("withdraw：" + new BigDecimal(amount));
         tkWallettransactionsMapper.insertTkWallettransactions(tkWallettransactions);
 
         // 返回新的余额
         return AjaxResult.success("Successful");
     }
+
 
     @Override
     public AjaxResult getUserUpgradeVIPMessage() {
@@ -589,6 +608,7 @@ public class TkUsersServiceImpl implements ITkUsersService
                 TkSpecialTask tkSpecialTask = new TkSpecialTask();
                 tkSpecialTask.setUserId(Long.valueOf(taskData.getUids().get(i)));
                 tkSpecialTask.setTaskId(Long.valueOf(taskId));
+                tkSpecialTask.setCreateTime(new Date());
                 tkSpecialTask.setStatus("0");
                 if(taskData.getTaskList().get(i1).getCount().equals("0")){
                     tkSpecialTask.setStatus("1");

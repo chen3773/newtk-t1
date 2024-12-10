@@ -1,6 +1,10 @@
 package com.tiktok.task.service.impl;
 
 import java.util.List;
+
+import com.tiktok.common.core.redis.RedisCache;
+import com.tiktok.common.utils.SecurityUtils;
+import com.tiktok.task.util.LanguageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.tiktok.task.mapper.TkAgreementMapper;
@@ -18,6 +22,8 @@ public class TkAgreementServiceImpl implements ITkAgreementService
 {
     @Autowired
     private TkAgreementMapper tkAgreementMapper;
+    @Autowired
+    private RedisCache redisCache;
 
     /**
      * 查询文本
@@ -40,7 +46,9 @@ public class TkAgreementServiceImpl implements ITkAgreementService
     @Override
     public List<TkAgreement> selectTkAgreementList(TkAgreement tkAgreement)
     {
-        return tkAgreementMapper.selectTkAgreementList(tkAgreement);
+        Long uid = SecurityUtils.getLoginUser().getUser().getUid();
+        List<TkAgreement> tkAgreements = tkAgreementMapper.selectTkAgreementList(tkAgreement);
+        return LanguageUtil.processListWithLanguageSettingList(uid,tkAgreements,redisCache);
     }
 
     /**

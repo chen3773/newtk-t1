@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tiktok.task.mapper.TkAssigningTasksMapper">
+    
+    <resultMap type="TkAssigningTasks" id="TkAssigningTasksResult">
+        <result property="id"    column="id"    />
+        <result property="uid"    column="uid"    />
+        <result property="level"    column="level"    />
+        <result property="taskid"    column="taskid"    />
+        <result property="state"    column="state"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+
+    <sql id="selectTkAssigningTasksVo">
+        select id, uid, level, taskid, state, create_by, create_time, update_by, update_time, remark from tk_assigning_tasks
+    </sql>
+
+    <select id="selectTkAssigningTasksList" parameterType="TkAssigningTasks" resultMap="TkAssigningTasksResult">
+        <include refid="selectTkAssigningTasksVo"/>
+        <where>  
+            <if test="level != null  and level != ''"> and level = #{level}</if>
+        </where>
+    </select>
+    
+    <select id="selectTkAssigningTasksById" parameterType="Long" resultMap="TkAssigningTasksResult">
+        <include refid="selectTkAssigningTasksVo"/>
+        where id = #{id}
+    </select>
+    <select id="getUserTask" resultMap="com.tiktok.task.mapper.TkTasksMapper.TkTasksResult">
+        SELECT tk_tasks.*
+        FROM tk_assigning_tasks
+                 JOIN tk_tasks ON tk_assigning_tasks.taskid = tk_tasks.id
+        WHERE tk_assigning_tasks.uid = #{uid}
+          AND tk_assigning_tasks.level = #{level}
+    </select>
+
+    <insert id="insertTkAssigningTasks" parameterType="TkAssigningTasks">
+        insert into tk_assigning_tasks
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="uid != null">uid,</if>
+            <if test="level != null">level,</if>
+            <if test="taskid != null">taskid,</if>
+            <if test="state != null">state,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="uid != null">#{uid},</if>
+            <if test="level != null">#{level},</if>
+            <if test="taskid != null">#{taskid},</if>
+            <if test="state != null">#{state},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTkAssigningTasks" parameterType="TkAssigningTasks">
+        update tk_assigning_tasks
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="uid != null">uid = #{uid},</if>
+            <if test="level != null">level = #{level},</if>
+            <if test="taskid != null">taskid = #{taskid},</if>
+            <if test="state != null">state = #{state},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteTkAssigningTasksById" parameterType="Long">
+        delete from tk_assigning_tasks where id = #{id}
+    </delete>
+
+    <delete id="deleteTkAssigningTasksByIds" parameterType="String">
+        delete from tk_assigning_tasks where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

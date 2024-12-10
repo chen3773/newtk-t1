@@ -27,6 +27,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectSpAddressesVo"/>
         <where>  
             <if test="addressId != null "> and address_id = #{addressId}</if>
+            <if test="uid != null "> and uid = #{uid}</if>
             <if test="country != null  and country != ''"> and country = #{country}</if>
         </where>
     </select>

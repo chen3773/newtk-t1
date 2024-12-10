@@ -11,6 +11,7 @@ import com.tiktok.task.domain.ov.UserTaskOV;
 import com.tiktok.task.mapper.*;
 import com.tiktok.task.service.ITkTaskAcceptancesService;
 import com.tiktok.task.util.AssertionUtils;
+import com.tiktok.task.util.LanguageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.tiktok.task.service.ITkTasksService;
@@ -57,7 +58,8 @@ public class TkTasksServiceImpl implements ITkTasksService
     @Override
     public TkTasks selectTkTasksById(Long id)
     {
-        return tkTasksMapper.selectTkTasksById(id);
+        TkTasks tkTasks = tkTasksMapper.selectTkTasksById(id);
+     return tkTasks;
     }
 
     /**
@@ -178,71 +180,91 @@ public class TkTasksServiceImpl implements ITkTasksService
     @Transactional
     public AjaxResult receiveTask(Long taskId)  {
         Long uid = SecurityUtils.getLoginUser().getUser().getUid();
-        //判断用户是否有未完成的任务
+        // 判断用户是否有未完成的任务
         TkTaskAcceptances tkTaskAcceptancesdDm = new TkTaskAcceptances();
         tkTaskAcceptancesdDm.setUid(uid);
         tkTaskAcceptancesdDm.setStatus("1");
-        List<TkTaskAcceptances> tkTaskAcceptances3= tkTaskAcceptancesMapper.selectTkTaskAcceptancesList(tkTaskAcceptancesdDm);
+        List<TkTaskAcceptances> tkTaskAcceptances3 = tkTaskAcceptancesMapper.selectTkTaskAcceptancesList(tkTaskAcceptancesdDm);
         tkTaskAcceptancesdDm.setStatus("4");
-        List<TkTaskAcceptances> tkTaskAcceptances5= tkTaskAcceptancesMapper.selectTkTaskAcceptancesList(tkTaskAcceptancesdDm);
+        List<TkTaskAcceptances> tkTaskAcceptances5 = tkTaskAcceptancesMapper.selectTkTaskAcceptancesList(tkTaskAcceptancesdDm);
         tkTaskAcceptancesdDm.setStatus("0");
-        List<TkTaskAcceptances> tkTaskAcceptances4= tkTaskAcceptancesMapper.selectTkTaskAcceptancesList(tkTaskAcceptancesdDm);
+        List<TkTaskAcceptances> tkTaskAcceptances4 = tkTaskAcceptancesMapper.selectTkTaskAcceptancesList(tkTaskAcceptancesdDm);
 
-        AssertionUtils.isTrue(tkTaskAcceptances3.size()==0,"You have a task to review, please wait patiently for approval.");
-        AssertionUtils.isTrue(tkTaskAcceptances5.size()==0,"You have a task to review, please wait patiently for approval.");
-        AssertionUtils.isTrue(tkTaskAcceptances4.size()==0,"There's still work to be done");
-        //只允许接一次
+        AssertionUtils.isTrue(tkTaskAcceptances3.size() == 0,
+                "{ \"Chinese\": \"您有任務正在審核，請耐心等待審核通過。\", \"English\": \"You have a task to review, please wait patiently for approval.\" }");
+        AssertionUtils.isTrue(tkTaskAcceptances5.size() == 0,
+                "{ \"Chinese\": \"您有任務正在審核，請耐心等待審核通過。\", \"English\": \"You have a task to review, please wait patiently for approval.\" }");
+        AssertionUtils.isTrue(tkTaskAcceptances4.size() == 0,
+                "{ \"Chinese\": \"還有工作尚未完成\", \"English\": \"There's still work to be done\" }");
+
+        // 只允许接一次
         TkTaskAcceptances tkTaskAcceptances1 = new TkTaskAcceptances();
         tkTaskAcceptances1.setTaskId(taskId);
         tkTaskAcceptances1.setUid(uid);
         List<TkTaskAcceptances> tkTaskAcceptances2 = tkTaskAcceptancesMapper.selectTkTaskAcceptancesList(tkTaskAcceptances1);
-        AssertionUtils.isTrue(tkTaskAcceptances2.size()==0,"Cannot be claimed again");
+        AssertionUtils.isTrue(tkTaskAcceptances2.size() == 0,
+                "{ \"Chinese\": \"不能重複認領\", \"English\": \"Cannot be claimed again\" }");
 
         TkTasks tkTasks = new TkTasks();
         tkTasks.setId(taskId);
         TkTasks TaskList = tkTasksMapper.selectTkTasksList(tkTasks).get(0);
 
-        AssertionUtils.isTrue(TaskList.getDeleted().equals("0"),"Network error");
+        AssertionUtils.isTrue(TaskList.getDeleted().equals("0"),
+                "{ \"Chinese\": \"網絡錯誤\", \"English\": \"Network error\" }");
         TkUsers tkUsers = tkUsersMapper.selectTkUsersByUid(uid);
-        //等级不符合
-        AssertionUtils.isTrue(TaskList.getTaskLevel()<=tkUsers.getSvipLevel(),"Level not met");
 
-        //判断数量
-        AssertionUtils.isTrue(TaskList.getSurplusquantity()>0,"Quota is full");
+        // 等级不符合
+        AssertionUtils.isTrue(TaskList.getTaskLevel() <= tkUsers.getSvipLevel(),
+                "{ \"Chinese\": \"等級不符合\", \"English\": \"Level not met\" }");
 
-        //判断用户是否还有任务额度
+        // 判断数量
+        AssertionUtils.isTrue(TaskList.getSurplusquantity() > 0,
+                "{ \"Chinese\": \"名額已滿\", \"English\": \"Quota is full\" }");
+
+        // 判断用户是否还有任务额度
         TkTasknum tkTasknum = new TkTasknum();
         tkTasknum.setUserId(uid);
         TkTasknum tkTasknum1 = tkTasknumMapper.selectTkTasknumList(tkTasknum).get(0);
-        //判断数量
-        if(TaskList.getTaskLevel()==0){
-            AssertionUtils.isTrue(tkTasknum1.getExperienceTaskCount()>0,"Insufficient quota");
-            tkTasknum1.setExperienceTaskCount(tkTasknum1.getExperienceTaskCount()-1);
-        }else if(TaskList.getTaskLevel()>0 && TaskList.getTaskLevel()<=5){
-            AssertionUtils.isTrue(tkTasknum1.getNormalTaskCount()>0,"Insufficient quota");
-            tkTasknum1.setNormalTaskCount(tkTasknum1.getNormalTaskCount()-1);
-        }else if(TaskList.getTaskLevel()==6){
-            AssertionUtils.isTrue(tkTasknum1.getHiddenTaskCount()>0,"Insufficient quota");
-            tkTasknum1.setHiddenTaskCount(tkTasknum1.getHiddenTaskCount()-1);
+
+        // 判断数量
+        if (TaskList.getTaskLevel() == 0) {
+            AssertionUtils.isTrue(tkTasknum1.getExperienceTaskCount() > 0,
+                    "{ \"Chinese\": \"名額不足\", \"English\": \"Insufficient quota\" }");
+            tkTasknum1.setExperienceTaskCount(tkTasknum1.getExperienceTaskCount() - 1);
+        } else if (TaskList.getTaskLevel() > 0 && TaskList.getTaskLevel() <= 5) {
+            AssertionUtils.isTrue(tkTasknum1.getNormalTaskCount() > 0,
+                    "{ \"Chinese\": \"名額不足\", \"English\": \"Insufficient quota\" }");
+            tkTasknum1.setNormalTaskCount(tkTasknum1.getNormalTaskCount() - 1);
+        } else if (TaskList.getTaskLevel() == 6) {
+            AssertionUtils.isTrue(tkTasknum1.getHiddenTaskCount() > 0,
+                    "{ \"Chinese\": \"名額不足\", \"English\": \"Insufficient quota\" }");
+            tkTasknum1.setHiddenTaskCount(tkTasknum1.getHiddenTaskCount() - 1);
         }
 
-        AssertionUtils.isTrue( tkTasknumMapper.updateTkTasknum(tkTasknum1)>0,"error");
+        AssertionUtils.isTrue(tkTasknumMapper.updateTkTasknum(tkTasknum1) > 0,
+                "{ \"Chinese\": \"錯誤\", \"English\": \"Error\" }");
 
-        //接入任务
+        // 接入任务
         TkTaskAcceptances tkTaskAcceptances = new TkTaskAcceptances();
         tkTaskAcceptances.setTaskId(taskId);
         tkTaskAcceptances.setStatus("0");
         tkTaskAcceptances.setUid(uid);
         tkTaskAcceptances.setTips("1");
         tkTaskAcceptances.setCreateTime(new Date());
-        //减少一个任务数量
-        tkTasks.setSurplusquantity(TaskList.getSurplusquantity()-1);
+
+        // 减少一个任务数量
+        tkTasks.setSurplusquantity(TaskList.getSurplusquantity() - 1);
         int i = tkTasksMapper.updateTkTasks(tkTasks);
-        //判断数量
-        AssertionUtils.isTrue(i!=0,"error");
-        //减少一个任务数
+
+        // 判断数量
+        AssertionUtils.isTrue(i != 0,
+                "{ \"Chinese\": \"錯誤\", \"English\": \"Error\" }");
+
+        // 减少一个任务数
         int i1 = tkTaskAcceptancesMapper.insertTkTaskAcceptances(tkTaskAcceptances);
-        AssertionUtils.isTrue(i1!=0,"error");
+        AssertionUtils.isTrue(i1 != 0,
+                "{ \"Chinese\": \"錯誤\", \"English\": \"Error\" }");
+
         return AjaxResult.success("success");
     }
 
@@ -267,6 +289,14 @@ public class TkTasksServiceImpl implements ITkTasksService
         userTaskList.addAll(userTaskList2);
 
 
+        for (int i = 0; i < userTaskList.size(); i++) {//多语言处理
+            TkTasks tkTasks = userTaskList.get(i).getTkTasks();
+            TkTaskAcceptances tkTaskAcceptances = userTaskList.get(i).getTkTaskAcceptances();
+            TkTasks obj1 = (TkTasks)LanguageUtil.processObjectWithLanguageSetting(uid, tkTasks, redisCache);
+            TkTaskAcceptances obj2 = (TkTaskAcceptances)LanguageUtil.processObjectWithLanguageSetting(uid, tkTaskAcceptances, redisCache);
+            userTaskList.get(i).setTkTasks(obj1);
+            userTaskList.get(i).setTkTaskAcceptances(obj2);
+        }
         return AjaxResult.success(userTaskList);
     }
 
@@ -329,6 +359,7 @@ public class TkTasksServiceImpl implements ITkTasksService
                         tkSpecialTasks.get(i1).setStatus("1");
                         specialTaskId = taskId;
                     }
+                    tkSpecialTasks.get(i1).setUpdateTime(new Date());
                     tkSpecialTaskMapper.updateTkSpecialTask(tkSpecialTasks.get(i1));
                 }
             }
@@ -396,12 +427,22 @@ public class TkTasksServiceImpl implements ITkTasksService
         List<UserTaskOV> userTaskById = tkTasksMapper.getUserTaskById(taskId, uid);
         for (int i = 0; i < userTaskById.size(); i++) {
             if(userTaskById.get(i).getTkTaskAcceptances().getStatus().equals("3")){
-                userTaskById.get(i).getTkTasks().setLink("Task failure");
+                userTaskById.get(i).getTkTasks().setLink("{ \"Chinese\": \"任務失敗\",   \"English\": \"Task failure\" }");
             }
             if(userTaskById.get(i).getTkTaskAcceptances().getStatus().equals("2")){
-                userTaskById.get(i).getTkTasks().setLink("Mission completed");
+                userTaskById.get(i).getTkTasks().setLink("{ \"Chinese\": \"任務完成\",   \"English\": \"Mission completed\" }");
             }
         }
+
+        for (int i = 0; i < userTaskById.size(); i++) {//多语言处理
+            TkTasks tkTasks = userTaskById.get(i).getTkTasks();
+            TkTaskAcceptances tkTaskAcceptances = userTaskById.get(i).getTkTaskAcceptances();
+            TkTasks obj1 = (TkTasks)LanguageUtil.processObjectWithLanguageSetting(uid, tkTasks, redisCache);
+            TkTaskAcceptances obj2 = (TkTaskAcceptances)LanguageUtil.processObjectWithLanguageSetting(uid, tkTaskAcceptances, redisCache);
+            userTaskById.get(i).setTkTasks(obj1);
+            userTaskById.get(i).setTkTaskAcceptances(obj2);
+        }
+
 
         return AjaxResult.success(userTaskById);
     }

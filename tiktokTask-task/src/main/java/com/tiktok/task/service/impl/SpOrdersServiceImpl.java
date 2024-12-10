@@ -13,6 +13,7 @@ import com.tiktok.common.utils.SecurityUtils;
 import com.tiktok.task.domain.*;
 import com.tiktok.task.domain.ov.OrderProductOV;
 import com.tiktok.task.mapper.*;
+import com.tiktok.task.util.LanguageUtil;
 import com.tiktok.task.util.OrderNumberGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -64,7 +65,9 @@ public class SpOrdersServiceImpl implements ISpOrdersService
     @Override
     public List<SpOrders> selectSpOrdersList(SpOrders spOrders)
     {
-        return spOrdersMapper.selectSpOrdersList(spOrders);
+        Long uid = SecurityUtils.getLoginUser().getUser().getUid();
+        List<SpOrders> spOrders1 = spOrdersMapper.selectSpOrdersList(spOrders);
+        return LanguageUtil.processListWithLanguageSettingList(uid,spOrders1,redisCache);
     }
 
     /**

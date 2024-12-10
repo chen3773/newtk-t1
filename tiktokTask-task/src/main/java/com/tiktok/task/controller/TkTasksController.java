@@ -8,7 +8,10 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 
+import com.tiktok.common.core.redis.RedisCache;
+import com.tiktok.common.utils.SecurityUtils;
 import com.tiktok.task.util.AssertionUtils;
+import com.tiktok.task.util.LanguageUtil;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -41,6 +44,8 @@ public class TkTasksController extends BaseController
 {
     @Autowired
     private ITkTasksService tkTasksService;
+    @Autowired
+    private RedisCache redisCache;
 
     /**
      * 查询任务列列表
@@ -178,7 +183,10 @@ public class TkTasksController extends BaseController
     @GetMapping("/getTaskId")
     public AjaxResult getTaskId(Long id)
     {
-        return success(tkTasksService.selectTkTasksById(id));
+
+        Long uid = SecurityUtils.getLoginUser().getUser().getUid();
+        TkTasks tkTasks = tkTasksService.selectTkTasksById(id);
+        return success(LanguageUtil.processObjectWithLanguageSetting(uid,tkTasks,redisCache));
     }
 
     /**
@@ -198,7 +206,7 @@ public class TkTasksController extends BaseController
      */
     @PostMapping("/receiveTask")
     public AjaxResult receiveTask(Long taskId){
-        AssertionUtils.isTrue(taskId!=null,"Missing parameter");
+        AssertionUtils.isTrue(taskId!=null,"{ \"Chinese\": \"缺少參數\",   \"English\": \"Missing parameter\" }");
        return tkTasksService.receiveTask(taskId);
     }
 

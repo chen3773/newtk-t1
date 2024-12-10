@@ -8,6 +8,7 @@ public class AssertionUtils {
     public static void isTrue(boolean condition,String message) {
         if (!condition) {
             throw new ErrorCodeException(ResultCode.CUSTOMER_SERVICE_ERROR,message);
+
         }
     }
 }

@@ -55,6 +55,7 @@ public class SpAddressesController extends BaseController
     public TableDataInfo Addresses(SpAddresses spAddresses)
     {
         startPage();
+        spAddresses.setUid(SecurityUtils.getLoginUser().getUser().getUid());
         List<SpAddresses> list = spAddressesService.Addresses(spAddresses);
         return getDataTable(list);
     }

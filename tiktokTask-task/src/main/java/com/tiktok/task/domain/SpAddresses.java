@@ -62,6 +62,23 @@ public class SpAddresses extends BaseEntity
     @Excel(name = "是否为默认地址")
     private String defaultAddress;
 
+    // 构造函数、getter 和 setter 方法省略
+
+    public String toUSAddressFormat() {
+        StringBuilder addressBuilder = new StringBuilder();
+        addressBuilder.append(fullName).append(",\n");
+        if (streetAddress1 != null && !streetAddress1.isEmpty()) {
+            addressBuilder.append(streetAddress1).append(",\n");
+        }
+        if (streetAddress2 != null && !streetAddress2.isEmpty()) {
+            addressBuilder.append(streetAddress2).append(",\n");
+        }
+        addressBuilder.append(city).append(", ").append(state).append(" ").append(postalCode).append("\n");
+        addressBuilder.append(country);
+
+        return addressBuilder.toString();
+    }
+
     public void setAddressId(Long addressId) 
     {
         this.addressId = addressId;

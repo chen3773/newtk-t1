@@ -1,7 +1,11 @@
 package com.tiktok.task.service.impl;
 
 import java.util.List;
+
+import com.tiktok.common.core.redis.RedisCache;
 import com.tiktok.common.utils.DateUtils;
+import com.tiktok.common.utils.SecurityUtils;
+import com.tiktok.task.util.LanguageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.tiktok.task.mapper.SpProductMapper;
@@ -19,6 +23,8 @@ public class SpProductServiceImpl implements ISpProductService
 {
     @Autowired
     private SpProductMapper spProductMapper;
+    @Autowired
+    private RedisCache redisCache;
 
     /**
      * 查询产品
@@ -29,7 +35,8 @@ public class SpProductServiceImpl implements ISpProductService
     @Override
     public SpProduct selectSpProductById(Long id)
     {
-        return spProductMapper.selectSpProductById(id);
+        SpProduct spProduct = spProductMapper.selectSpProductById(id);
+       return spProduct;
     }
 
     /**
@@ -41,7 +48,9 @@ public class SpProductServiceImpl implements ISpProductService
     @Override
     public List<SpProduct> selectSpProductList(SpProduct spProduct)
     {
-        return spProductMapper.selectSpProductList(spProduct);
+        List<SpProduct> spProducts = spProductMapper.selectSpProductList(spProduct);
+        Long uid = SecurityUtils.getLoginUser().getUser().getUid();
+        return LanguageUtil.processListWithLanguageSettingList(uid,spProducts,redisCache);
     }
 
     /**

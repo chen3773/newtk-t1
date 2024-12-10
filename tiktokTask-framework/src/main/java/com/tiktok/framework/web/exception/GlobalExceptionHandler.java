@@ -81,18 +81,7 @@ public class GlobalExceptionHandler
         return StringUtils.isNotNull(code) ? AjaxResult.error(code, e.getMessage()) : AjaxResult.error(e.getMessage());
     }
 
-    /**
-     * 仿照业务异常——自定义异常抛出
-     */
-    @ExceptionHandler(ErrorCodeException.class)
-    public AjaxResult UserDefinedException(ErrorCodeException e){
-        System.out.println("StringUtils.isNull(e.getCode()):"+StringUtils.isNull(e.getCode()));
-        if (StringUtils.isNull(e.getCode()))
-        {
-            return AjaxResult.error(e.getMessage());
-        }
-        return AjaxResult.error(e.getCode(), e.getMessage());
-    }
+
 
 
 
@@ -190,6 +179,61 @@ public class GlobalExceptionHandler
         }
         return AjaxResult.error(message);
     }
+
+
+//    /**
+//     * 仿照业务异常——自定义异常抛出
+//     */
+//    @ExceptionHandler(ErrorCodeException.class)
+//    public AjaxResult UserDefinedException(ErrorCodeException e){
+//        System.out.println("StringUtils.isNull(e.getCode()):"+StringUtils.isNull(e.getCode()));
+//        if (StringUtils.isNull(e.getCode()))
+//        {
+//            return AjaxResult.error(e.getMessage());
+//        }
+//        return AjaxResult.error(e.getCode(), e.getMessage());
+//    }
+
+    /**
+     * 自定义验证异常
+     */
+    @ExceptionHandler(ErrorCodeException.class)
+    public AjaxResult ErrorCodeException(ErrorCodeException  e)
+    {
+        String message = e.getMessage();
+        Long uid = null;
+
+        try {
+            uid = SecurityUtils.getLoginUser().getUser().getUid();
+        }catch (Exception ee){
+            uid = null;
+        }
+        String language = "English";
+        if (uid != null) {
+            // 从Redis中获取用户的语言设置
+            String l =   (String) redisCache.getCacheObject("user:language:" + uid);;
+            if(l!=null){
+                language = l;
+            }
+
+        }
+        String[] strings = ParseTitle.parseText(message);
+        if (strings != null && strings.length >= 2 && strings[0] != null && strings[1] != null) {
+            if(language.equals("Chinese")){
+                message =   strings[0];
+            }else if(language.equals("English")){
+                message =  strings[1];
+            }
+
+        }
+
+        if (StringUtils.isNull(e.getCode()))
+        {
+            return AjaxResult.error(message);
+        }
+        return AjaxResult.error(e.getCode(),message);
+    }
+
 
 
     /**
