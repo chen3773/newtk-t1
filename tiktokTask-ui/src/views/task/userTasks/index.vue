@@ -65,7 +65,7 @@
 
     <el-table v-loading="loading" :data="userTasksList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="${comment}" align="center" prop="id" />
+      <!-- <el-table-column label="${comment}" align="center" prop="id" /> -->
       <el-table-column label="用户id" align="center" prop="uid" />
       <el-table-column label="任务等级" align="center" prop="level">
         <template slot-scope="scope">
@@ -73,7 +73,7 @@
         </template>
       </el-table-column>
       <el-table-column label="任务id" align="center" prop="taskid" />
-      <el-table-column label="${comment}" align="center" prop="state" />
+      <!-- <el-table-column label="${comment}" align="center" prop="state" /> -->
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') }}</span>
@@ -115,7 +115,7 @@
           <el-input v-model="form.uid" placeholder="请输入用户id" />
         </el-form-item>
         <el-form-item label="任务等级" prop="level">
-          <el-select v-model="form.level" placeholder="请选择任务等级">
+          <el-select v-model="form.level" placeholder="请选择任务等级" @change="form.taskid = '';getSortinglist()">
             <el-option
               v-for="dict in dict.type.tk_task"
               :key="dict.value"
@@ -125,11 +125,21 @@
           </el-select>
         </el-form-item>
         <el-form-item label="任务id" prop="taskid">
+            <el-select v-model="form.taskid" placeholder="请选择任务" clearable style="width: 100%;">
+              <el-option
+                v-for="dict in tasksList"
+                :key="dict.id"
+                :label="dict.label"
+                :value="dict.id"
+              />
+            </el-select>
+          </el-form-item>
+        <!-- <el-form-item label="任务id" prop="taskid">
           <el-input v-model="form.taskid" placeholder="请输入任务id" />
-        </el-form-item>
-        <el-form-item label="${comment}" prop="state">
+        </el-form-item> -->
+        <!-- <el-form-item label="${comment}" prop="state">
           <el-input v-model="form.state" placeholder="请输入${comment}" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="备注" prop="remark">
           <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" />
         </el-form-item>
@@ -144,6 +154,7 @@
 
 <script>
 import { listUserTasks, getUserTasks, delUserTasks, addUserTasks, updateUserTasks } from "@/api/task/userTasks";
+import { Sortinglist } from "@/api/task/tasks";
 
 export default {
   name: "UserTasks",
@@ -178,11 +189,14 @@ export default {
       form: {},
       // 表单校验
       rules: {
-      }
+      },
+      tasksList: [],
+      taskLevel: ''
     };
   },
   created() {
     this.getList();
+    this.getSortinglist()
   },
   methods: {
     /** 查询用户指定对应等级任务列表 */
@@ -192,6 +206,19 @@ export default {
         this.userTasksList = response.rows;
         this.total = response.total;
         this.loading = false;
+      });
+    },
+    getSortinglist() {
+      Sortinglist({
+        pageNum: 1,
+        pageSize: 500,
+        taskLevel: this.form.level
+      }).then(response => {
+        this.tasksList = response.rows;
+        this.tasksList.map(item => {
+          item.label = `ID: ${item.id}; 名称: ${item.title}; 金额: ${item.rewardAmount}`;
+        })
+        this.tasksList = [...this.tasksList]
       });
     },
     // 取消按钮
@@ -206,7 +233,7 @@ export default {
         uid: null,
         level: null,
         taskid: null,
-        state: null,
+        state: 0,
         createBy: null,
         createTime: null,
         updateBy: null,
