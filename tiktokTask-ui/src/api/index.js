@@ -14,3 +14,18 @@ export function pendingTask() {
     method: 'get'
   })
 }
+
+export function LanguageSetting(query) {
+  return request({
+    url: '/task/users/LanguageSetting',
+    method: 'get',
+    params: query
+  })
+}
+
+export function getLanguage() {
+  return request({
+    url: '/task/users/getLanguage',
+    method: 'get'
+  })
+}

@@ -8,6 +8,7 @@
 
 <script>
 import ThemePicker from "@/components/ThemePicker";
+import { getLanguage } from "@/api/index";
 
 export default {
   name: "App",
@@ -24,6 +25,12 @@ export default {
         return title ? `${title} - ${process.env.VUE_APP_TITLE}` : process.env.VUE_APP_TITLE
       }
     }
+  },
+  created() {
+    if (!localStorage.getItem('Language')) {
+      localStorage.setItem('Language', 'English')
+    }
+    // this.getLang()
   },
   watch: {
     // 监听路由对象中的变化
@@ -68,6 +75,11 @@ export default {
           });
       }, 10000);
     },
+    getLang() {
+      getLanguage().then(response => {
+        
+      });
+    }
   }
 };
 </script>

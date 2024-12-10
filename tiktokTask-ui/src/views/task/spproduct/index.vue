@@ -64,7 +64,7 @@
             ></el-option>
           </el-select>
       </el-form-item>
-      <el-form-item label="语言" prop="language">
+      <!-- <el-form-item label="语言" prop="language">
         <el-select
           v-model="queryParams.language"
           placeholder="请选择语言"
@@ -77,10 +77,11 @@
             :value="dict.value"
           />
         </el-select>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        <el-button type="primary" size="mini" @click="changeLange">切换语言</el-button>
       </el-form-item>
     </el-form>
 
@@ -127,6 +128,7 @@
           v-hasPermi="['task:spproduct:export']"
         >导出</el-button>
       </el-col>
+      
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
@@ -253,6 +255,7 @@
 <script>
 import { listSpproduct, getSpproduct, delSpproduct, addSpproduct, updateSpproduct } from "@/api/task/spproduct";
 import { listGroups } from "@/api/task/groups";
+import { LanguageSetting } from "@/api/index";
 
 export default {
   name: "Spproduct",
@@ -292,8 +295,7 @@ export default {
         productDetails: null,
         createTime: null,
         status: null,
-        groupId: null,
-        language: "Chinese",
+        groupId: null
       },
       // 表单参数
       form: {},
@@ -327,6 +329,15 @@ export default {
     this.getList();
   },
   methods: {
+    changeLange() {
+      let language = localStorage.getItem('Language') == 'English' ? 'Chinese' : 'English';
+      LanguageSetting({
+        Language: language
+      }).then(response => {
+        localStorage.setItem('Language', language)
+        this.getList();
+      });
+    },
     getListGroups() {
       listGroups({
         pageNum: 1,

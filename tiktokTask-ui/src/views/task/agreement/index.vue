@@ -129,6 +129,7 @@
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
+        <el-button type="primary" size="mini" @click="changeLange">切换语言</el-button>
       </div>
     </el-dialog>
     <el-dialog
@@ -145,6 +146,7 @@
 
 <script>
 import { listAgreement, getAgreement, delAgreement, addAgreement, updateAgreement } from "@/api/task/agreement";
+import { LanguageSetting } from "@/api/index";
 
 export default {
   name: "Agreement",
@@ -199,6 +201,15 @@ export default {
     this.getList();
   },
   methods: {
+    changeLange() {
+      let language = localStorage.getItem('Language') == 'English' ? 'Chinese' : 'English';
+      LanguageSetting({
+        Language: language
+      }).then(response => {
+        localStorage.setItem('Language', language)
+        this.getList();
+      });
+    },
     /** 查询文本列表 */
     getList() {
       this.loading = true;

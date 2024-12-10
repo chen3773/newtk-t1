@@ -104,11 +104,17 @@
       <el-table-column label="数量" align="center" prop="quantity" />
       
       <el-table-column label="总价" align="center" prop="totalPrice" />
-      <el-table-column label="订单状态" align="center" prop="status" />
-      <el-table-column label="配送地址" align="center" prop="shippingAddress" />
-      <el-table-column label="支付方式" align="center" prop="paymentMethod" />
-      <el-table-column label="支付状态" align="center" prop="paymentStatus" />
-      <el-table-column label="配送状态" align="center" prop="shippingStatus" />
+      <el-table-column label="订单状态" align="center" prop="status" >
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.order_status" :value="scope.row.status"/>
+        </template>
+      </el-table-column>
+      <el-table-column label="收件人姓名" align="center" prop="fullName" />
+      <el-table-column label="收件人电话" align="center" prop="phoneNumber" />
+      <el-table-column label="收件人地址" align="center" prop="address" />
+      <!-- <el-table-column label="支付方式" align="center" prop="paymentMethod" />
+      <el-table-column label="支付状态" align="center" prop="paymentStatus" /> -->
+      <!-- <el-table-column label="配送状态" align="center" prop="shippingStatus" /> -->
       <!-- <el-table-column label="创建时间" align="center" prop="createdAt">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createdAt, '{y}-{m}-{d}') }}</span>
@@ -155,40 +161,56 @@
 
     <!-- 添加或修改订单信息对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="用户ID" prop="uid">
+      <el-form ref="form" :model="form" :rules="rules" label-width="110px">
+        <!-- <el-form-item label="用户ID" prop="uid">
           <el-input v-model="form.uid" placeholder="请输入用户ID" />
         </el-form-item>
         <el-form-item label="商品ID" prop="productId">
           <el-input v-model="form.productId" placeholder="请输入商品ID" />
-        </el-form-item>
-        <el-form-item label="数量" prop="quantity">
+        </el-form-item> -->
+        <!-- <el-form-item label="数量" prop="quantity">
           <el-input v-model="form.quantity" placeholder="请输入数量" />
-        </el-form-item>
-        <el-form-item label="订单日期" prop="orderDate">
+        </el-form-item> -->
+        <!-- <el-form-item label="订单日期" prop="orderDate">
           <el-date-picker clearable
             v-model="form.orderDate"
             type="date"
             value-format="yyyy-MM-dd"
             placeholder="请选择订单日期">
           </el-date-picker>
-        </el-form-item>
-        <el-form-item label="总价" prop="totalPrice">
+        </el-form-item> -->
+        <!-- <el-form-item label="总价" prop="totalPrice">
           <el-input v-model="form.totalPrice" placeholder="请输入总价" />
+        </el-form-item> -->
+        <el-form-item label="收件人姓名" prop="fullName">
+          <el-input v-model="form.fullName" placeholder="请输入收件人姓名" />
         </el-form-item>
-        <el-form-item label="配送地址" prop="shippingAddress">
-          <el-input v-model="form.shippingAddress" placeholder="请输入配送地址" />
+        <el-form-item label="收件人电话" prop="phoneNumber">
+          <el-input v-model="form.phoneNumber" placeholder="请输入收件人电话" />
         </el-form-item>
-        <el-form-item label="支付方式" prop="paymentMethod">
+        <el-form-item label="收件人地址" prop="address">
+          <el-input type="textarea" v-model="form.address" placeholder="请输入收件人地址" />
+        </el-form-item>
+        <!-- <el-form-item label="支付方式" prop="paymentMethod">
           <el-input v-model="form.paymentMethod" placeholder="请输入支付方式" />
-        </el-form-item>
-        <el-form-item label="创建时间" prop="createdAt">
+        </el-form-item> -->
+        <!-- <el-form-item label="创建时间" prop="createdAt">
           <el-date-picker clearable
             v-model="form.createdAt"
             type="date"
             value-format="yyyy-MM-dd"
             placeholder="请选择创建时间">
           </el-date-picker>
+        </el-form-item> -->
+        
+        <el-form-item label="订单状态" prop="status">
+          <el-radio-group v-model="form.status">
+            <el-radio
+              v-for="dict in dict.type.order_status"
+              :key="dict.value"
+              :label="dict.value"
+            >{{dict.label}}</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="更新时间" prop="updatedAt">
           <el-date-picker clearable
@@ -215,6 +237,7 @@ import { listOrders, getOrders, delOrders, addOrders, updateOrders } from "@/api
 
 export default {
   name: "Orders",
+  dicts: ['order_status'],
   data() {
     return {
       // 遮罩层
@@ -270,6 +293,15 @@ export default {
       }
       listOrders(this.queryParams).then(response => {
         this.ordersList = response.rows;
+        this.ordersList.map(item => {
+          if (item.shippingAddress) {
+            const address = JSON.parse(item.shippingAddress);
+            
+            item.fullName = address.fullName;
+            item.phoneNumber = address.phoneNumber;
+            item.address = address.state + address.city + address.streetAddress1 + address.streetAddress2;
+          }
+        })
         this.total = response.total;
         this.loading = false;
       });
@@ -296,7 +328,10 @@ export default {
         createdAt: null,
         updatedAt: null,
         note: null,
-        orderNumber: null
+        orderNumber: null,
+        fullName: null,
+        phoneNumber: null,
+        address: null
       };
       this.resetForm("form");
     },
@@ -329,6 +364,14 @@ export default {
       const orderId = row.orderId || this.ids
       getOrders(orderId).then(response => {
         this.form = response.data;
+        if (this.form.shippingAddress) {
+            const address = JSON.parse(this.form.shippingAddress);
+            
+            this.form.fullName = address.fullName;
+            this.form.phoneNumber = address.phoneNumber;
+            this.form.address = address.state + address.city + address.streetAddress1 + address.streetAddress2;
+          }
+          this.form = {...this.form}
         this.open = true;
         this.title = "修改订单信息";
       });
@@ -337,6 +380,17 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          if (this.form.shippingAddress) {
+            let address = JSON.parse(this.form.shippingAddress);
+            address.fullName = this.form.fullName;
+            address.phoneNumber = this.form.phoneNumber;
+            address.state = '';
+            address.city = '';
+            address.streetAddress1 = '';
+            address.streetAddress2 = this.form.address;
+            this.form.shippingAddress = JSON.stringify(address)
+          }
+          
           if (this.form.orderId != null) {
             updateOrders(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
