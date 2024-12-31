@@ -158,13 +158,13 @@
             v-hasPermi="['task:acceptances:edit']"
             v-if="scope.row.tips == 1"
           >开启提示音</el-button> -->
-          <!-- <el-button
+          <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
             v-hasPermi="['task:acceptances:remove']"
-          >删除</el-button> -->
+          >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
